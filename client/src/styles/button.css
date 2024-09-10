@@ -1,0 +1,62 @@
+/* General button styles */
+.button {
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    padding: 0.5vh 0.5vw;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  
+
+  .button.filled {
+    background-color:var(--filled);
+    color: var(--text-light);
+  }
+  
+  .button.filled:hover {
+    background-color: var(--filled-hover);
+  }
+  
+  .button.empty {
+    background-color:var(--empty);
+    color: var(--text-dark);
+    border: 1px solid var(--text-dark);
+  }
+  
+  .button.empty:hover {
+    background-color: var(--empty-hover);
+    color: var(--text-light);
+  }
+  
+  /* Button sizes */
+  .button.small {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .button.medium {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+  
+  .button.large {
+    font-size: 16px;
+    padding: 12px 24px;
+  }
+  
+  /* Button shapes */
+  .button.length {
+    border-radius: 4px;
+  }
+  
+  .button.circle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
