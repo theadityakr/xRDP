@@ -1,10 +1,7 @@
-.column{
-    display:flex;
-    flex-direction: column;
+.connection-details-form{
+    background-color: green;
 }
 
-.row{
-    display:flex;
-    flex-direction: row;
-    gap:0.6vw
+.connection-details-form > .inputfield{
+ background-color: red;
 }

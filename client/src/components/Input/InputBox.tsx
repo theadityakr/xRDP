@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import '../../styles/input.css'
+
 interface InputBoxProps {
   placeholderName?: string;
   onChange: (value: string) => void; 
