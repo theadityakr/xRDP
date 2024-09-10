@@ -1,0 +1,16 @@
+.input{
+ padding:5px;
+}
+
+.input.small{
+    min-width: 5vw;
+}
+
+.input.medium{
+    min-width: 8vw;
+}
+
+.input.large{
+    min-width: 10vw;
+}
+

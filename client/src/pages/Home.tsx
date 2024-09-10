@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Form from "../components/form.tsx";
+import Form from "../components/Form.tsx";
 import "../App.css";
 
 const Home: React.FC = () => {
@@ -7,9 +7,10 @@ const Home: React.FC = () => {
 
   return (
     <div className="container">
+      <div className="flex-column">
       <h1>Welcome to RDP!</h1>
       <Form onGreet={setGreetMsg} />
-      <p>{greetMsg}</p>
+      </div>
     </div>
   );
 };
