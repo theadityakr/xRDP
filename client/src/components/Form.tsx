@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
 import '../styles/form.css'
-import InputBox from "./Input/InputBox";
+import InputText from "./Input/InputText";
 import ConnectButton from "./Button/Connect";
-
+import SettingDialogBox from "./Input/SettingDialogBox";
 
 const Form: React.FC<any> = () => {
   
@@ -16,14 +16,36 @@ const Form: React.FC<any> = () => {
     <div className="flex-column connection-details-form">
       <div className="flex-row inputfield">
         <p>Computer</p>
-        <InputBox onChange={handleInputChange} placeholderName="Enter IP address , add any specific port" size="large"/>
+        <InputText onChange={handleInputChange} placeholderName="Enter IP address , add any specific port" size="large"/>
       </div>
 
       <div className="flex-row">
         <p>Username</p>
-        <InputBox onChange={handleInputChange} placeholderName="Enter username of the VM" size="large"/>
+        <InputText onChange={handleInputChange} placeholderName="Enter username of the VM" size="large"/>
       </div>
-      
+      <div className="dialog-box">
+      <SettingDialogBox
+        sectionName="General Settings"
+        options={[
+          { label: 'Save Password', value: 'option1' },
+          { label: 'Multiple Display', value: 'option2' },
+          { label: 'Local Drives Redirection', value: 'option2' },
+        ]}
+        selectedValue='{formState.section1}'
+        onChange={handleInputChange}
+      />
+    </div>
+    <div className="dialog-box">
+    <SettingDialogBox
+        sectionName="Advanced Settings"
+        options={[
+          { label: 'Printers', value: 'option1' },
+          { label: 'Clipboard', value: 'option2' },
+        ]}
+        selectedValue='{formState.section1}'
+        onChange={handleInputChange}
+      />
+      </div>
       <ConnectButton/>
     </div>
 

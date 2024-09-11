@@ -7,7 +7,7 @@
 
   --selected:var(--text-dark);
 
-  --background-grey:#f5f6f8;
+  --background-grey:#dee1e6;
   --background-darkgrey:#eeefee;
   --background-light: var(--text-light);
 
@@ -150,6 +150,7 @@ body {
   display:flex;
   flex-direction:row;
   justify-content:space-between;
+  align-items:center
 }
 
 .flex-column{
@@ -159,8 +160,13 @@ body {
 }
 
 .container{
-   height:100vh;
+   height:89vh;
    display:flex;
    justify-content: center;
    align-items:center
+}
+
+h1{
+  margin :4vh 0;
+  text-align-last: center;
 }

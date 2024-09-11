@@ -50,7 +50,7 @@
     border-radius: 4px;
   }
   
-  .button.circle {
+  /* .button.circle {
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -58,5 +58,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+  } */
   
+  .icons{
+    border:0;
+    border-radius:50%;
+    padding: 5px;
+    cursor: pointer;
+    color:var(--text-dark);
+    background:transparent;
+  }
+
+  .icons:hover{
+    color:var(--filled-hover)
+  }

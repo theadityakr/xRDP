@@ -3,14 +3,36 @@
 }
 
 .input.small{
-    min-width: 5vw;
-}
-
-.input.medium{
-    min-width: 8vw;
-}
-
-.input.large{
     min-width: 10vw;
 }
 
+.input.medium{
+    min-width: 20vw;
+}
+
+.input.large{
+    min-width: 18vw;
+    max-width: 30vw;
+}
+
+.dialog-box{
+    border: 1px solid #0E5CC929;
+    border-radius: 12px;
+    padding: 3vh 2vw;
+}
+
+h4{
+    margin-bottom:1.5vh
+}
+
+.settings-grid{
+    display: grid;
+    gap: 2vh;
+    grid-template-columns: repeat(2, 1fr);
+    position: relative;
+}
+
+label{
+    gap:1vw;
+    justify-content:start !important;
+}

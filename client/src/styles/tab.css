@@ -1,0 +1,17 @@
+.tab-bar {
+    /* width: 100vw; */
+    /* justify-content:start;
+    gap :2vw; */
+    background-color:var(--background-grey);
+}
+
+.tab-bar-buttons{
+    /* gap: 1vw; */
+    /* padding: 1vh 1vw; */
+    /* margin-top: -1vh; */
+}
+
+.tabs-container{
+    min-width:88vw;
+    /* padding: 1vh 1vw; */
+}
