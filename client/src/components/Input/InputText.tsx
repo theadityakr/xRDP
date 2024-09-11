@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 
 import '../../styles/input.css'
 
-interface InputBoxProps {
+interface InputTextProps {
   placeholderName?: string;
   onChange: (value: string) => void; 
   size?: 'small' | 'medium' | 'large';
 }
 
-const InputBox: React.FC<InputBoxProps> = ({onChange, size = 'medium', placeholderName = '....' }) => {
+const InputText: React.FC<InputTextProps> = ({onChange, size = 'medium', placeholderName = '....' }) => {
   const [name, setName] = useState<string>(''); 
   
-  const inputBoxClassName = `input ${size}`.trim();
+  const InputTextClassName = `input ${size}`.trim();
 
   return (
     <input
@@ -20,10 +20,10 @@ const InputBox: React.FC<InputBoxProps> = ({onChange, size = 'medium', placehold
         setName(e.target.value); 
         onChange(e.target.value); 
       }}
-      className={inputBoxClassName}
+      className={InputTextClassName}
       placeholder={placeholderName}
     />
   );
 };
 
-export default InputBox;
+export default InputText;

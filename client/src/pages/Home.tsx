@@ -1,17 +1,25 @@
 import React, { useState } from "react";
-import Form from "../components/Form.tsx";
+
+
 import "../App.css";
+import Form from "../components/Form.tsx";
+import Tab from "../components/Tab.tsx";
+
+
 
 const Home: React.FC = () => {
-  const [greetMsg, setGreetMsg] = useState("");
 
+  
   return (
+    <>
+    <Tab/>
     <div className="container">
       <div className="flex-column">
-      <h1>Welcome to RDP!</h1>
-      <Form onGreet={setGreetMsg} />
+        <h1>Remote Desktop Connection</h1>
+        <Form />
       </div>
     </div>
+    </>
   );
 };
 
