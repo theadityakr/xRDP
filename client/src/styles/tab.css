@@ -2,16 +2,26 @@
     /* width: 100vw; */
     /* justify-content:start;
     gap :2vw; */
+    height:46px;
     background-color:var(--background-grey);
+    margin-bottom:0;
 }
 
 .tab-bar-buttons{
-    /* gap: 1vw; */
-    /* padding: 1vh 1vw; */
-    /* margin-top: -1vh; */
+    gap: 1vw;
+    padding: 0.4vh 0 0.4vh 0;
+    
 }
 
 .tabs-container{
-    min-width:88vw;
+    min-width:85.2vw;
     /* padding: 1vh 1vw; */
+}
+
+.chrome-tabs-bottom-bar{
+    display:none;
+}
+
+.chrome-tabs{
+    padding: 1vh 0 0 0;
 }

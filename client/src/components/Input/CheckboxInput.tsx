@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import '../../styles/input.css'
+import '../../styles/input.css';
 
-
-interface RadioInputProps {
+interface CheckboxInputProps {
   name: string;
   label: string;
   value: string;
@@ -11,11 +10,11 @@ interface RadioInputProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const RadioInput: React.FC<RadioInputProps> = ({ name, label, value, checked, onChange }) => {
+const CheckboxInput: React.FC<CheckboxInputProps> = ({ name, label, value, checked, onChange }) => {
   return (
     <label className='flex-row'>
       <input
-        type="radio"
+        type="checkbox"
         name={name}
         value={value}
         checked={checked}
@@ -26,5 +25,4 @@ const RadioInput: React.FC<RadioInputProps> = ({ name, label, value, checked, on
   );
 };
 
-export default RadioInput;
-
+export default CheckboxInput;

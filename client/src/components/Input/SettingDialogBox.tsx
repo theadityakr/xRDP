@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
 
 import '../../styles/input.css'
-import RadioInput from './RadioInput';
+import CheckboxInput from './CheckboxInput';
 
 interface SubsectionProps {
     sectionName: string;
     options: { label: string; value: string }[];
-    selectedValue: string;
-    onChange: (section: string, value: string) => void;
+    selectedValues: string[];
+    onChange: (section: string, values: string[]) => void;
   }
   
-  const SettingDialogBox: React.FC<SubsectionProps> = ({ sectionName, options, selectedValue, onChange }) => {
-    const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(sectionName, event.target.value);
+  const SettingDialogBox: React.FC<SubsectionProps> = ({
+    sectionName,
+    options,
+    selectedValues,
+    onChange,
+  }) => {
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      let updatedValues;
+
+      if (event.target.checked) {
+        updatedValues = [...selectedValues, value];
+      } else {
+        updatedValues = selectedValues.filter((selected) => selected !== value);
+      }
+      onChange(sectionName, updatedValues); 
     };
   
     return (
@@ -20,13 +33,13 @@ interface SubsectionProps {
         <h4>{sectionName}</h4>
         <div className="settings-grid">
         {options.map(option => (
-          <RadioInput
+          <CheckboxInput
             key={option.value}
             name={sectionName}
             label={option.label}
             value={option.value}
-            checked={selectedValue === option.value}
-            onChange={handleRadioChange}
+            checked={selectedValues.includes(option.value)} 
+            onChange={handleCheckboxChange}
           />
         ))}
         </div>

@@ -33,6 +33,33 @@ h4{
 }
 
 label{
-    gap:1vw;
+    font-size: 16px;
+    cursor: pointer;
     justify-content:start !important;
 }
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid #ccc;
+    appearance: none;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+  
+  input[type="checkbox"]:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 16px;
+    position: relative;
+    left: 1px;
+    top: -3px;
+  }
