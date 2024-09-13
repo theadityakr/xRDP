@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
-import '../styles/form.css'
+import '../styles/form.css';
 import InputText from "./Input/InputText";
 import ConnectButton from "./Button/Connect";
 import SettingDialogBox from "./Input/SettingDialogBox";
@@ -13,17 +13,45 @@ const Form: React.FC<any> = () => {
     generalSettings: [] as string[],
     advancedSettings: [] as string[],
   });
+
   const handleInputChange = (field: string) => (value: string) => {
     setFormState((prevState) => ({
       ...prevState,
       [field]: value,
     }));
   };
+
   const handleCheckboxChange = (section: string, values: string[]) => {
     setFormState((prevState) => ({
       ...prevState,
       [section]: values,
     }));
+  };
+
+  const handleSubmit = async () => {
+    console.log("Submit button clicked"); // Check if this is logged
+
+    const data = {
+      computer: formState.computer,
+      username: formState.username,
+      generalSettings: {
+        savePassword: formState.generalSettings.includes('save_password'),
+        multipleDisplay: formState.generalSettings.includes('multiple_display'),
+        localDrivesRedirection: formState.generalSettings.includes('local_drives_redirection'),
+      },
+      advancedSettings: {
+        printers: formState.advancedSettings.includes('printers'),
+        clipboard: formState.advancedSettings.includes('clipboard'),
+      },
+    };
+
+    console.log("Form data to be sent to backend:", JSON.stringify(data, null, 2));
+
+    try {
+      await invoke('send_form_data', { data }); // Call backend API
+    } catch (error) {
+      console.error("Error sending form data:", error);
+    }
   };
 
   return (
@@ -71,7 +99,7 @@ const Form: React.FC<any> = () => {
         />
       </div>
 
-      <ConnectButton />
+      <ConnectButton onClick={handleSubmit} />
     </div>
   );
 };
