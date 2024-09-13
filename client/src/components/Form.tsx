@@ -29,7 +29,7 @@ const Form: React.FC<any> = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("Submit button clicked"); // Check if this is logged
+    console.log("Submit button clicked");
 
     const data = {
       computer: formState.computer,
@@ -45,10 +45,12 @@ const Form: React.FC<any> = () => {
       },
     };
 
-    console.log("Form data to be sent to backend:", JSON.stringify(data, null, 2));
+    
 
     try {
-      await invoke('send_form_data', { data }); // Call backend API
+      const connectionSettings =  JSON.stringify(data, null, 2);
+      console.log(connectionSettings);
+      invoke('connect',{connectionSettings}).then((message)=> console.log(message));
     } catch (error) {
       console.error("Error sending form data:", error);
     }
