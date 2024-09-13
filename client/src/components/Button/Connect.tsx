@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 import Button from './Button';
 
+interface ConnectButtonProps {
+  onClick: () => void; // Ensure it takes onClick as a prop
+}
 
-const ConnectButton: React.FC<any> = () => {
-
-    const AddTab = () => {
-        
-    }
-
+const ConnectButton: React.FC<ConnectButtonProps> = ({ onClick }) => {
   return (
-    <Button label='Connect' type= 'empty' onClick={AddTab}/>
+    <Button label="Connect" type="empty" onClick={onClick} />
   );
 };
 

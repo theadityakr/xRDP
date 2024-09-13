@@ -160,16 +160,24 @@ body {
 }
 
 .container{
-   height:92vh;
-   display:flex;
-   justify-content: center;
-   align-items:center;
-   background:url(./assets/bg.svg);
-   background-size: cover;
-   background-position: center
+  height: 97vh;
+  width: fit-content;
+  display: flex;
+  /* justify-content: space-between; */
+  /* align-items: center; */
+  gap: 10vw;
+  background: url(/src/assets/bg.svg);
+  background-size: cover;
+  background-position: center;
 }
 
 h1{
   margin: 0 0 4vh 0;
   text-align-last: center;
+}
+
+@media only screen  and (max-width: 500px){
+  .container{
+    background-color: red;;
+  }
 }
