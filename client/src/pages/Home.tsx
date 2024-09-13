@@ -17,14 +17,14 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <div className="flex-row container">
+      <div className="container">
         <Sidebar onTabChange={handleTabChange} activeTab={activeTab} />
-        <div className="flex-column form-container">
-          <h1>Remote Desktop Connection</h1>
-          {/* Render Form only based on activeTab */}
+        <div className="content-container">
           {activeTab === "Home" && <Form key="Home" />}
-          {activeTab === "Devices" && <Devices key="Devices" />}
+        
         </div>
+        
+        {activeTab === "Devices" && <Devices key="Devices" />}
       </div>
     </>
   );

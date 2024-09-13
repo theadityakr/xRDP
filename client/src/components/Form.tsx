@@ -55,7 +55,9 @@ const Form: React.FC<any> = () => {
   };
 
   return (
+    <div className="flex-column form-container">
     <div className="flex-column connection-details-form">
+      <h1>Remote Desktop Connection</h1>
       <div className="flex-row inputfield">
         <p>Computer</p>
         <InputText
@@ -100,6 +102,7 @@ const Form: React.FC<any> = () => {
       </div>
 
       <ConnectButton onClick={handleSubmit} />
+    </div>
     </div>
   );
 };

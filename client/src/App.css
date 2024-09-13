@@ -160,15 +160,21 @@ body {
 }
 
 .container{
-  height: 97vh;
-  width: fit-content;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   /* justify-content: space-between; */
   /* align-items: center; */
-  gap: 10vw;
+  /* gap: 10vw; */
   background: url(/src/assets/bg.svg);
   background-size: cover;
   background-position: center;
+}
+
+.content-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 h1{
@@ -176,8 +182,11 @@ h1{
   text-align-last: center;
 }
 
-@media only screen  and (max-width: 500px){
-  .container{
-    background-color: red;;
-  }
+@media only screen  and (max-width: 700px){
+  .sidebar {
+    width: 3vw !important; /* Force sidebar to remain collapsed */
+}
+.content-container ,.dev-container{
+    width: calc(100vw - 3vw) !important; /* Adjust content width accordingly */
+}
 }
