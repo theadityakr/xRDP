@@ -6,7 +6,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 
 class RDPClient:
-    def __init__(self, host='38.126.136.103', port=5000):
+    def __init__(self, host='38.107.67.232', port=3000):
         self.host = host
         self.port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
