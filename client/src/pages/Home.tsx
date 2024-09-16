@@ -21,10 +21,10 @@ const Home: React.FC = () => {
         <Sidebar onTabChange={handleTabChange} activeTab={activeTab} />
         <div className="content-container">
           {activeTab === "Home" && <Form key="Home" />}
-        
+          {activeTab === "Devices" && <Devices key="Devices" />}
         </div>
         
-        {activeTab === "Devices" && <Devices key="Devices" />}
+        
       </div>
     </>
   );

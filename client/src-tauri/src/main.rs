@@ -1,4 +1,4 @@
-mod server;
+// mod server;
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -11,7 +11,7 @@ fn greet(name: &str) -> String {
 fn connect(connection_settings: String) -> String {
 
     format!("rthtrhfh{}",connection_settings);
-    server::                                  helper::check();
+    // server::helper::check();
     
     let connect_info : String = String::from("Connected!");
     connect_info.into()

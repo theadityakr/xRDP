@@ -7,29 +7,44 @@
  /* background-color: red; */
 }
 
-.form-container,.devices-container{
+.form-container,.active-devices-super-contanier{
     border: 1px solid #3A77CC29;
     border-radius: 12px;
     padding: 4vh 2.5vw;
     box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
-.devices-container{
-    width:80px;
-    height:90px;
-    display:flex;
-    align-items: center;
+.device-container{
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping to new rows */
+    gap: 1vw; /* Adds space between items, optional */
+    justify-content: flex-start;
 }
 
 h3{
     margin:1vh 0;
 }
 
-.dev-container{
-    display: flex;
-    justify-content: flex-start;
-  }
-  .dev-container {
-    padding: 2vh 2vw;
-    height: 96vh; /* Default width when sidebar is collapsed */
+
+.device{
+    flex: 0 1 calc(25% - 10px); /* 25% width for 4 columns minus gap space */
+    box-sizing: border-box; /* Ensures padding and border don't affect width */
+    padding: 1vh 1vw;
+    background-color: var(--background-grey);
+    text-align: center;
+    /* border: 1px solid #ccc; */
+    border-radius:8px;
+    cursor:pointer;
 }
+
+
+/* @media only screen and (max-width: 600px) {
+    .device{
+        padding: 2vh 2vw;
+        border-radius:12px;
+    }
+
+    .device-container{
+        gap: 5vw; 
+    }
+  } */
