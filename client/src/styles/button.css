@@ -6,6 +6,7 @@
     padding: 0.5vh 0.5vw;
     border-radius: 20px;
     display: inline-block;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
   }
   
 
@@ -16,6 +17,8 @@
   
   .button.filled:hover {
     background-color: var(--filled-hover);
+    color: var(--text-dark);
+    
   }
   
   .button.empty {
@@ -27,6 +30,7 @@
   .button.empty:hover {
     background-color: var(--empty-hover);
     color: var(--text-light);
+    
   }
   
   /* Button sizes */

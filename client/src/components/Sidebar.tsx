@@ -14,22 +14,22 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onTabChange, activeTab }) => {
     const [isExpanded, setIsExpanded] = useState(true);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 700) {
-                setIsExpanded(true);
-            } else {
-                setIsExpanded(false);
-            }
-        };
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         if (window.innerWidth < 700) {
+    //             setIsExpanded(true);
+    //         } else {
+    //             setIsExpanded(false);
+    //         }
+    //     };
 
-        window.addEventListener('resize', handleResize);
-        handleResize();
+    //     window.addEventListener('resize', handleResize);
+    //     handleResize();
 
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    //     return () => {
+    //         window.removeEventListener('resize', handleResize);
+    //     };
+    // }, []);
 
     const handleClick = (tab: "Home" | "Devices") => {
         onTabChange(tab);
@@ -44,16 +44,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onTabChange, activeTab }) => {
             <div className="sidebar-container">
                 <div className="sidebar-item sidebar-tile" onClick={toggleSidebar}>
                     <IconContext.Provider value={{ className: "sidebarIcon" }}>
-                        <TbLayoutSidebarLeftExpand size={25} />
+                        <TbLayoutSidebarLeftExpand size={28} />
                         <span>{isExpanded ? '' : 'Expand Sidebar'}</span>
                     </IconContext.Provider>
                 </div>
                 <div className={`sidebar-item ${activeTab === "Home" ? 'active' : ''}`} onClick={() => handleClick("Home")}>
-                    <TbSmartHome size={25} />
+                    <TbSmartHome size={27} />
                     <span>Home</span>
                 </div>
                 <div className={`sidebar-item ${activeTab === "Devices" ? 'active' : ''}`} onClick={() => handleClick("Devices")}>
-                    <LuMonitorDot size={24} />
+                    <LuMonitorDot size={26} />
                     <span>Devices</span>
                 </div>
             </div>

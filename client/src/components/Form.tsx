@@ -30,7 +30,6 @@ const Form: React.FC<any> = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("Submit button clicked");
 
     const data = {
       computer: formState.computer,

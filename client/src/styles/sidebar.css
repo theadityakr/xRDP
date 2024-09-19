@@ -2,13 +2,15 @@
 .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 1.5vh 0;
+    justify-content: center;
+    /* padding: 1.5vh 0; */
     gap: 2vh 0;
-    font-size: smaller;
+    font-size: medium;
     font-weight: 500;
-    height: 97vh;
+    height: 100vh;
     transition: width 0.5s;
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    /* box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; */
+    box-shadow: rgb(127 126 126 / 35%) 0px 5px 15px;
     width: 5.5vw; /* Default width for collapsed state */
 }
 
@@ -16,9 +18,9 @@
     width: 5.5vw; 
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 800px) {
     .sidebar.collapsed {
-        width: 3vw; 
+        width: 9vw; 
     }
 }
 
@@ -28,7 +30,7 @@
 
 /* Sidebar container styling for items */
 .sidebar-container {
-    margin-top: 4.5vh;
+    /* margin-top: 4.5vh; */
     display: flex;
     flex-direction: column;
     gap: 2vh 0;
@@ -53,7 +55,7 @@
     font-weight: bold;
     background-color: var(--button-filled);
     color: var(--text-light);
-    border-left: 5px solid var(--border-color);
+    /* border-left: 5px solid var(--border-color); */
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
@@ -62,7 +64,7 @@
     background-color: var(--button-filled-hover);
     color: var(--text-light);
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    border-left: 5px solid var(--border-color);
+    /* border-left: 5px solid var(--border-color); */
 }
 
 /* Styling for hover effect on sidebar item */
@@ -70,7 +72,7 @@
     background-color: var(--button-filled-hover);
     color: var(--text-light);
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    border-left: 5px solid var(--button-filled-hover);
+    /* border-left: 5px solid var(--button-filled-hover); */
 }
 
 /* Hide span by default */
@@ -79,8 +81,8 @@
     position: absolute;
     /* left: 75px;  */
     margin-left: 34px;
-    /* background-color: var(--background-grey); */
-    border:1px solid #3A77CC29;
+    /* background-color: var(--text-light grey); */
+    border:1px solid #3a77cc60;
     padding: 5px 10px;
     border-radius: 4px;
 }

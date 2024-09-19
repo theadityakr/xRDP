@@ -7,34 +7,43 @@
  gap:3vw;
 }
 
-.form-container,.active-devices-super-contanier{
-    border: 1px solid #3A77CC29;
+.form-container,.active-devices-super-container{
+    border: 1px solid #3a77cc50;
     border-radius: 12px;
-    padding: 4vh 2.5vw;
+    padding: 3.5vh 2.5vw;
     box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
-.device-container{
-    display: flex;
-    flex-wrap: wrap; /* Allows wrapping to new rows */
-    gap: 1vw; /* Adds space between items, optional */
-    justify-content: flex-start;
+.active-devices-super-container{
+    align-self:baseline !important;
+    margin-top: 4vh;
 }
-
-h3{
-    margin:1vh 0;
+.device-container{
+    /* display: flex;
+    flex-wrap: wrap;
+    gap: 1vw; 
+    justify-content: flex-start; */
+    display: grid;
+    gap: 3vh;
+    grid-template-columns: repeat(6, 1fr);
+    position: relative;
+    
 }
 
 
 .device{
-    flex: 0 1 calc(25% - 10px); /* 25% width for 4 columns minus gap space */
-    box-sizing: border-box; /* Ensures padding and border don't affect width */
-    padding: 1vh 1vw;
+    /* flex: 0 1 calc(25% - 10px); */
+    box-sizing: border-box;
+    padding: 2.5vh 2vw;
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
     background-color: transparent;
     text-align: center;
     border: 1px solid var(--text-dark);
-    border-radius:8px;
-    cursor:pointer;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--background-grey);
 }
 
 
