@@ -1,13 +1,13 @@
 :root {
-  --text-light:#ffffff;
-  --text-grey:#b9b9bd;
-  --text-dark:#1c1d20;
+  --text-light:#95e8f5;
+  --text-grey:#89898b;
+  --text-dark:#337a85;
 
   --appbar-background:var(--text-light);
 
   --selected:var(--text-dark);
 
-  --background-grey:#dee1e6;
+  --background-grey:#c2c2c5;
   --background-darkgrey:#eeefee;
   --background-light: var(--text-light);
 
@@ -24,6 +24,7 @@
 }
 
 body {
+  background-color:#292e38 ;
   font-family: "Poppins", sans-serif;
     font-weight: 400;
     font-style: normal;
@@ -31,7 +32,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   scrollbar-width: thin;
   scrollbar-color: rgb(223, 223, 223) transparent;
-  color: var(--text-dark);
+  color: var(--background-grey);
 }
 
 
@@ -177,9 +178,10 @@ body {
   justify-content: center;
 }
 
-h1{
+h2{
   margin: 0 0 4vh 0;
   text-align-last: center;
+  color: var(--text-light);
 }
 
 @media only screen  and (max-width: 700px){

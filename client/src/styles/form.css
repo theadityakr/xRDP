@@ -4,7 +4,7 @@
 }
 
 .connection-details-form > .inputfield{
- /* background-color: red; */
+ gap:3vw;
 }
 
 .form-container,.active-devices-super-contanier{
@@ -30,9 +30,9 @@ h3{
     flex: 0 1 calc(25% - 10px); /* 25% width for 4 columns minus gap space */
     box-sizing: border-box; /* Ensures padding and border don't affect width */
     padding: 1vh 1vw;
-    background-color: var(--background-grey);
+    background-color: transparent;
     text-align: center;
-    /* border: 1px solid #ccc; */
+    border: 1px solid var(--text-dark);
     border-radius:8px;
     cursor:pointer;
 }

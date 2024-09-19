@@ -10,6 +10,7 @@ const Form: React.FC<any> = () => {
   const [formState, setFormState] = useState({
     computer: '',
     username: '',
+    password: '',
     generalSettings: [] as string[],
     advancedSettings: [] as string[],
   });
@@ -34,6 +35,7 @@ const Form: React.FC<any> = () => {
     const data = {
       computer: formState.computer,
       username: formState.username,
+      password: formState.password,
       generalSettings: {
         savePassword: formState.generalSettings.includes('save_password'),
         multipleDisplay: formState.generalSettings.includes('multiple_display'),
@@ -59,7 +61,7 @@ const Form: React.FC<any> = () => {
   return (
     <div className="flex-column form-container">
     <div className="flex-column connection-details-form">
-      <h1>Remote Desktop Connection</h1>
+      <h2>Remote Desktop Connection</h2>
       <div className="flex-row inputfield">
         <p>Computer</p>
         <InputText
@@ -69,11 +71,20 @@ const Form: React.FC<any> = () => {
         />
       </div>
 
-      <div className="flex-row">
+      <div className="flex-row inputfield">
         <p>Username</p>
         <InputText
           onChange={handleInputChange('username')}
           placeholderName="Enter username of the VM"
+          size="large"
+        />
+      </div>
+
+      <div className="flex-row inputfield">
+        <p>Password</p>
+        <InputText
+          onChange={handleInputChange('password')}
+          placeholderName="Enter password of the VM"
           size="large"
         />
       </div>
