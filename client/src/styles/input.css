@@ -1,5 +1,5 @@
 .input{
- padding:5px;
+ padding:7px;
 }
 
 .input.small{
@@ -11,18 +11,19 @@
 }
 
 .input.large{
-    min-width: 18vw;
-    max-width: 30vw;
+    width: 320px;
+    max-width: 360px;
 }
 
 .dialog-box{
     border: 1px solid #0E5CC929;
     border-radius: 12px;
-    padding: 3vh 2vw;
+    padding: 1.8vh 2vw;
 }
 
 h4{
-    margin-bottom:1.5vh
+    margin-bottom:1.5vh;
+    color:var(--text-dark)
 }
 
 .settings-grid{
@@ -33,7 +34,7 @@ h4{
 }
 
 label{
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     justify-content:start !important;
 }
@@ -42,6 +43,7 @@ input[type="checkbox"] {
     width: 20px;
     height: 20px;
     margin-right: 8px;
+    padding:0;
     cursor: pointer;
     border-radius: 4px;
     border: 2px solid #ccc;
@@ -51,9 +53,9 @@ input[type="checkbox"] {
   }
   
   input[type="checkbox"]:checked {
-    background-color: #007bff;
+    background-color: var(--text-dark);
     padding:0;
-    border-color: #007bff;
+    border-color: var(--text-dark);
   }
   
   input[type="checkbox"]:checked::after {
@@ -73,11 +75,11 @@ input[type="checkbox"] {
     width: 100%;
     box-sizing: border-box;
     background-color: transparent;
-    color:var(--background-grey)
+    color:var(--text-lightgrey)
   }
   
   input:focus {
-    border-color: #007bff;
+    border-color: var(--text-light);
     color:#ccc;
     outline: none;
   }
