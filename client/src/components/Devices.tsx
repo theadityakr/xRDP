@@ -8,7 +8,7 @@ const Devices = () => {
 
     return (
         <div className="flex-column active-devices-super-contanier">
-        <h1>Active Devices</h1>
+        <h2>Active Devices</h2>
        <div className="device-container">
            
                 <div className="device">

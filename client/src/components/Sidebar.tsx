@@ -1,12 +1,11 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { LuMonitorDot } from "react-icons/lu";
-import { GoHome } from "react-icons/go";
+import { TbSmartHome } from "react-icons/tb";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { IconContext } from "react-icons";
 
 import '../styles/sidebar.css';
 
-// Define the type for the props
 interface SidebarProps {
     onTabChange: (tab: "Home" | "Devices") => void;
     activeTab: "Home" | "Devices";
@@ -25,7 +24,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onTabChange, activeTab }) => {
         };
 
         window.addEventListener('resize', handleResize);
-        // Set initial state based on window width
         handleResize();
 
         return () => {
@@ -44,14 +42,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onTabChange, activeTab }) => {
     return (
         <div className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
             <div className="sidebar-container">
-                <div className="sidebar-tile" onClick={toggleSidebar}>
+                <div className="sidebar-item sidebar-tile" onClick={toggleSidebar}>
                     <IconContext.Provider value={{ className: "sidebarIcon" }}>
                         <TbLayoutSidebarLeftExpand size={25} />
-                        <span>{isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}</span>
+                        <span>{isExpanded ? '' : 'Expand Sidebar'}</span>
                     </IconContext.Provider>
                 </div>
                 <div className={`sidebar-item ${activeTab === "Home" ? 'active' : ''}`} onClick={() => handleClick("Home")}>
-                    <GoHome size={24} />
+                    <TbSmartHome size={25} />
                     <span>Home</span>
                 </div>
                 <div className={`sidebar-item ${activeTab === "Devices" ? 'active' : ''}`} onClick={() => handleClick("Devices")}>
