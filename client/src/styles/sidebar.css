@@ -1,21 +1,17 @@
-/* Sidebar container styling */
 .sidebar {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* padding: 1.5vh 0; */
-    gap: 2vh 0;
     font-size: medium;
     font-weight: 500;
     height: 100vh;
     transition: width 0.5s;
-    /* box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; */
     box-shadow: rgb(127 126 126 / 35%) 0px 5px 15px;
-    width: 5.5vw; /* Default width for collapsed state */
 }
 
 .sidebar.collapsed {
-    width: 5.5vw; 
+    width: 6vw; 
+
 }
 
 @media only screen and (max-width: 800px) {
@@ -28,122 +24,65 @@
     width: 15vw;
 }
 
-/* Sidebar container styling for items */
 .sidebar-container {
-    /* margin-top: 4.5vh; */
     display: flex;
     flex-direction: column;
     gap: 2vh 0;
 }
 
-/* Sidebar item styling */
+.sidebar-item svg{
+    margin-left:0.4vw;
+}
 .sidebar-item {
     cursor: pointer;
     display: flex;
-    justify-content: flex-start;
+    /* justify-content: flex-start; */
     align-items: center;
-    flex-direction: row;
-    gap: 0.2vw;
+    gap: 0.9vw;
     padding: 1.5vh .5vw;
     color: var(--text-grey);
-    border-radius: 0px 5px 5px 0px;
-    position: relative; /* Positioning for span */
 }
 
-/* Styling for active sidebar item */
-.sidebar-item.active {
-    font-weight: bold;
-    background-color: var(--button-filled);
-    color: var(--text-light);
-    /* border-left: 5px solid var(--border-color); */
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-}
-
-/* Styling for hover effect on active sidebar item */
-.sidebar-item.active:hover {
-    background-color: var(--button-filled-hover);
-    color: var(--text-light);
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    /* border-left: 5px solid var(--border-color); */
-}
-
-/* Styling for hover effect on sidebar item */
-.sidebar-item:hover {
-    background-color: var(--button-filled-hover);
-    color: var(--text-light);
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    /* border-left: 5px solid var(--button-filled-hover); */
-}
-
-/* Hide span by default */
-.sidebar-item span {
-    display: none; /* Hidden by default */
-    position: absolute;
-    /* left: 75px;  */
-    margin-left: 34px;
-    /* background-color: var(--text-light grey); */
-    border:1px solid #3a77cc60;
-    padding: 5px 10px;
-    border-radius: 4px;
-}
-
-.sidebar.collapsed .sidebar-item span{
-    margin-left: 120px;
-}
-
-.sidebar.collapsed .sidebar-item {
-    display: flex;
+.sidebar.collapsed .sidebar-item{
     justify-content: center;
 }
-.sidebar-tile span {
+
+.sidebar-item span {
     display: none;
 }
 
-.sidebar-tile:hover span {
-    display: inline;
+.sidebar.expanded .sidebar-item span{
+    display: inline
 }
 
-.sidebar-item:hover span {
-    display: inline; /* Show on hover */
-}
-/* 
-/* Optional: Show span only when the sidebar is expanded */
-.sidebar.expanded .sidebar-item span {
-    display: inline; /* Always show when expanded */
-    border:0;
-} */
-
-.sidebar-tile {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content:center;
-    padding: 1.5vh .5vw;
-    color: var(--text-grey);
-}
-
-/* Sidebar icon styling */
-.sidebarIcon {
-    cursor: pointer;
-    transition: color 0.3s;
-    /* padding: 0.5vw; */
-    border-radius: 4px;
-    /* margin-left: 2px; */
-    color: var(--text-grey);
-}
-
-/* Hover and active state for sidebar icons */
-.sidebarIcon:hover, .sidebarIcon.active {
+.sidebar-item:hover, .sidebar-item.active {
     color: var(--text-light);
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+.sidebar-item.active {
+    position: relative;
+}
+
+.sidebar-item.active::before {
+    content: "";
+    position: absolute;
+    margin-right:-0.4vw;
+    left: -2px; 
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--text-light);
+    border-radius: 50%;
 }
 
 .content-container {
     transition: width 0.5s;
     padding: 20px;
-    width: calc(100vw - 5.5vw); /* Default width when sidebar is collapsed */
+    width: calc(100vw - 6vw);
 }
 
 .sidebar.expanded ~ .content-container {
-    width: calc(100vw - 15vw); /* Adjust content width when sidebar is expanded */
+    width: calc(100vw - 15vw); 
 }
