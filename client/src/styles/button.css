@@ -2,6 +2,7 @@
 .button {
     border: none;
     cursor: pointer;
+    font-weight: 600;
     transition: background-color 0.1s ease;
     padding: 0.5vh 0.5vw;
     border-radius: 20px;
@@ -29,8 +30,7 @@
   
   .button.empty:hover {
     background-color: var(--empty-hover);
-    color: var(--text-light);
-    
+    color: var(--text-white);
   }
   
   /* Button sizes */
