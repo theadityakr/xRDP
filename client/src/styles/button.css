@@ -31,7 +31,6 @@
   .button.empty:hover {
     background-color: var(--empty-hover);
     color: var(--text-white);
-    
   }
   
   /* Button sizes */
