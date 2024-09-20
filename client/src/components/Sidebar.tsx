@@ -6,6 +6,7 @@ import { IconContext } from "react-icons";
 
 import '../styles/sidebar.css';
 
+
 interface SidebarProps {
     onTabChange: (tab: "Home" | "Devices") => void;
     activeTab: "Home" | "Devices";
