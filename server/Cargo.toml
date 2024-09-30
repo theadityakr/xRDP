@@ -5,8 +5,6 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.28", features = ["full"] }
-regex = "1"
-chrono = "0.4"
 futures = "0.3"
 image = "0.24"
 scrap = "0.5"
