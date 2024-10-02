@@ -429,8 +429,10 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.6",
 ]
 
@@ -2811,9 +2813,11 @@ checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
 name = "rdp"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "enigo",
  "futures",
  "minifb",
+ "regex",
  "serde",
  "serde_json",
  "tauri",
