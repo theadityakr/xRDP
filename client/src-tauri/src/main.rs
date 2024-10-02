@@ -1,25 +1,31 @@
-// mod server;
-
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+pub mod server {
+        pub mod network;
+        pub mod client;
+    }
+use crate::server::network::network_check;
+use crate::server::client::start_client;
+
 
 #[tauri::command]
-fn connect(connection_settings: String) -> String {
+async fn connect(connection_settings: String)  {
 
-    format!("rthtrhfh{}",connection_settings);
-    // server::helper::check();
-    
-    let connect_info : String = String::from("Connected!");
-    connect_info.into()
+    // get data store in the VM using client hostname folder XXXX/netw...2024..txt
+    // match network_check().await {
+    //     Ok(_) => println!("Network check completed successfully"),
+    //     Err(e) => eprintln!("Network check failed: {}", e),
+    // }
+
+    match start_client(connection_settings).await {
+        Ok(_) => println!("Connection Started successfully"),
+        Err(e) => eprintln!("Connection Failed: {}", e),
+    }
+
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![connect])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

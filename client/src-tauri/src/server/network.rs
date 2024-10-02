@@ -4,19 +4,29 @@ use std::fs::File;
 use std::io::Write;
 use chrono::Local;
 
-pub async fn network_check() {
-    let mut response: String = String::from("");
+pub async fn network_check()  -> Result<(), Box<dyn std::error::Error>>  {
+        let mut response: String = String::from("");
 
-    response.push_str(&ping_and_analyze("google.com",4).await);
-    // response.push_str(&ping_and_analyze("hotmail.com", 60).await);
-    // response.push_str(&traceroute("apps4rent.com").await);
-    // response.push_str(&traceroute("billing.apps4rent.com").await);
-    // response.push_str(&traceroute("cp.hostallapps.com").await);
+        response.push_str(&ping_and_analyze("google.com",60).await);
+        response.push_str(&ping_and_analyze("hotmail.com", 60).await);
+        response.push_str(&traceroute("apps4rent.com").await);
+        response.push_str(&traceroute("billing.apps4rent.com").await);
+        response.push_str(&traceroute("cp.hostallapps.com").await);
 
+        match create_network_file(response).await {
+            Ok(_) => println!("Network File Creation completed successfully"),
+            Err(e) => eprintln!("Network File Creation failed: {}", e),
+        }
+        Ok(())
+    }
+
+
+async fn create_network_file(data: String)  -> Result<(), Box<dyn std::error::Error>> {
     let now = Local::now();
     let file_name = format!("network_check_{}.txt", now.format("%Y-%m-%d_%H-%M-%S"));
     let mut file = File::create(&file_name).expect("Failed to create file");
-    file.write_all(response.as_bytes()).expect("Failed to write to file");
+    file.write_all(data.as_bytes()).expect("Failed to write to file");
+    Ok(())
 }
 
 async fn ping_and_analyze(host: &str, duration: u64) -> String {

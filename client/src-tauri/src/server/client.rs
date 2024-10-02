@@ -1,36 +1,69 @@
 use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use serde::{Serialize, Deserialize};
+use serde_json::Result as JsonResult;
 use minifb::{Key, Window, WindowOptions};
 // use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 // use winit::event_loop::{ControlFlow, EventLoop};
 
+
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct ConnectionSettings {
+    computer: String,
+    username: String,
+    password: String,
+    general_settings: GeneralSettings,
+    advanced_settings: AdvancedSettings,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct GeneralSettings {
+    save_password: bool,
+    multiple_display: bool,
+    local_drives_redirection: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct AdvancedSettings {
+    printers: bool,
+    clipboard: bool,
+}
+
+#[derive(Debug)]
 struct Credentials {
+    address: String,
     username: String,
     password: String,
 }
 
-pub async fn start_client(address: &str, username: &str, password: &str) -> Result<String, Box<dyn std::error::Error>> {
-    // Define the credentials
-    let credentials = Credentials {
-        username: username.to_string(),
-        password: password.to_string(),
-    };
+async fn initial_check(connection_settings: String) -> JsonResult<Credentials> {
+    let settings: ConnectionSettings = serde_json::from_str(&connection_settings)?;
+    
+    Ok(Credentials {
+        address: settings.computer,
+        username: settings.username,
+        password: settings.password
+    })
+}
 
-    // Connect to the server
-    let mut stream = TcpStream::connect(address).await?;
-    println!("Connected to the server at {}", address);
+pub async fn start_client(connection_settings: String) -> Result<String, Box<dyn std::error::Error>> {
+    let credentials = initial_check(connection_settings).await?;
 
-    // Send credentials as JSON
-    let creds_json = serde_json::to_string(&credentials)?;
-    stream.write_all(creds_json.as_bytes()).await?;
-    stream.flush().await?;
+    let mut stream = TcpStream::connect(&credentials.address).await?;
+    println!("Connected to the server at {}", &credentials.address);
 
-    // Read server's response
-    let mut buffer = [0; 1024];
-    let n = stream.read(&mut buffer).await?;
-    let response = String::from_utf8_lossy(&buffer[..n]).to_string();
+
+    // let creds_json = serde_json::to_string(&credentials)?;
+    // stream.write_all(creds_json.as_bytes()).await?;
+    // stream.flush().await?;
+
+    // // Read server's response
+    // let mut buffer = [0; 1024];
+    // let n = stream.read(&mut buffer).await?;
+    // let response = String::from_utf8_lossy(&buffer[..n]).to_string();
 
     // use winit::event_loop::EventLoop;
     // let event_loop = EventLoop::new().unwrap();
@@ -85,7 +118,7 @@ pub async fn start_client(address: &str, username: &str, password: &str) -> Resu
     // });
 
     
-    Ok(response)
+    Ok(credentials.address)
 }
 
 
