@@ -1,11 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-pub mod server {
+pub mod app {
         pub mod network;
         pub mod client;
+        pub mod render;
     }
-use crate::server::network::network_check;
-use crate::server::client::start_client;
+use crate::app::network::network_check;
+use crate::app::client::start_client;
 
 
 #[tauri::command]

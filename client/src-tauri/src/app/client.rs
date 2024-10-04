@@ -6,6 +6,7 @@ use minifb::{Key, Window, WindowOptions};
 // use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 // use winit::event_loop::{ControlFlow, EventLoop};
 
+use crate::app::render;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -55,7 +56,7 @@ pub async fn start_client(connection_settings: String) -> Result<String, Box<dyn
     let mut stream = TcpStream::connect(&credentials.address).await?;
     println!("Connected to the server at {}", &credentials.address);
 
-
+    render::render_screen(stream).await?;
     // let creds_json = serde_json::to_string(&credentials)?;
     // stream.write_all(creds_json.as_bytes()).await?;
     // stream.flush().await?;
