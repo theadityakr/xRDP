@@ -4,7 +4,8 @@ pub mod app {
         pub mod network;
         pub mod client;
         pub mod render;
-    }
+        pub mod input;
+        }
 use crate::app::network::network_check;
 use crate::app::client::start_client;
 
