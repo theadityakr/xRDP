@@ -1,8 +1,5 @@
 use tokio::net::{TcpListener,TcpStream};
-use tokio::time::Duration;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use scrap::{Capturer, Display};
-use std::thread::sleep;
+use tokio::io::{AsyncReadExt, ReadHalf, WriteHalf,AsyncWriteExt};
 use winapi::um::handleapi::CloseHandle;
 use winapi::um::winnt::HANDLE;
 use std::io::Error as IoError;
@@ -13,12 +10,14 @@ use winapi::um::wingdi::DeleteDC;
 use winapi::um::wingdi::DeleteObject;
 use image::{ImageBuffer, Rgba};
 use lz4_flex::block::compress_prepend_size;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 // use crate::app::helper::get_local_ip;
 use crate::app::auth;
+use crate::app::read_inputs;
 
-
-async fn capture_and_stream(mut stream: TcpStream) -> Result<(), IoError> {
+async fn capture_and_stream(mut stream: WriteHalf<TcpStream>) -> Result<(), IoError> {
     let desktop_window: HWND = unsafe { GetDesktopWindow() };
     let desktop_dc: HDC = unsafe { GetWindowDC(desktop_window) };
     let compatible_dc: HDC = unsafe { CreateCompatibleDC(desktop_dc) };
@@ -77,38 +76,18 @@ async fn capture_and_stream(mut stream: TcpStream) -> Result<(), IoError> {
     Ok(())
 }
 
-async fn run_remote_desktop_server(_token: HANDLE, mut socket: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
+async fn run_remote_desktop_server(socket: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
 
-        // let one_frame_duration = Duration::from_millis(100);
-        // let display = Display::primary().expect("Couldn't find the primary display.");
-        // let mut capturer = Capturer::new(display).expect("Couldn't begin capturing.");
-
-        // loop {
-        //     match capturer.frame() {
-        //         Ok(frame) => {
-        //             // Send the frame to the client
-        //             if let Err(_) = socket.write_all(&frame).await {
-        //                 println!("Client disconnected.");
-        //                 break;
-        //             }
-        //             // Slow down the loop to control frame rate
-        //             sleep(one_frame_duration);
-        //         }
-        //         Err(_) => {
-        //             // If the screen is being switched or other error, retry
-        //             // capturer = Capturer::new(display).expect("Couldn't reinitialize capturing.");
-        //         }
-        //     }
-        // }
-
-        capture_and_stream(socket).await?;
+    let (mut read_half, mut write_half) = tokio::io::split(socket);
+    capture_and_stream(write_half).await?;
+    read_inputs::read_user_input_make_changes(read_half).await?;
     Ok(())
   
 }
 
 pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
 
-    // let address = get_local_ip().await?;
+
     let listener = TcpListener::bind("0.0.0.0:3000").await?;
 
     loop {
@@ -128,11 +107,11 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
                 socket.write_all(error_message.as_bytes()).await?;
                 socket.flush().await?;
 
-                tokio::spawn(async move {
-                    if let Err(e) = run_remote_desktop_server(token, socket).await {
-                        eprintint!("Error in start function: {}", e);
+                // tokio::spawn(async move {
+                    if let Err(e) = run_remote_desktop_server(socket).await {
+                        eprintln!("Error in start function: {}", e);
                     }
-                });
+                // });
                 unsafe { CloseHandle(token) };
             },
             Err(e) => {
