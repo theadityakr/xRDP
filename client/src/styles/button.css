@@ -5,7 +5,7 @@
     font-weight: 600;
     transition: background-color 0.1s ease;
     padding: 0.5vh 0.5vw;
-    border-radius: 20px;
+    border-radius: 8px;
     display: inline-block;
     box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
   }
@@ -18,14 +18,14 @@
   
   .button.filled:hover {
     background-color: var(--filled-hover);
-    color: var(--text-dark);
+    /* color: var(--text-dark); */
     
   }
   
   .button.empty {
     background-color:var(--empty);
     color: var(--text-dark);
-    border: 1px solid var(--text-dark);
+    border: 1px solid var(--border);
   }
   
   .button.empty:hover {
@@ -51,7 +51,7 @@
   
   /* Button shapes */
   .button.length {
-    border-radius: 4px;
+    border-radius: 8px;
   }
   
   /* .button.circle {

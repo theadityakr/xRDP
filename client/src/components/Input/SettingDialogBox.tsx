@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-
 import '../../styles/input.css'
 import CheckboxInput from './CheckboxInput';
 

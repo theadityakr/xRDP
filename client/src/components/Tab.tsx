@@ -44,7 +44,7 @@ const Tab: React.FC<TabProps> = ({ setActiveTab }) => {
     setTabs(tabs.filter((tab) => tab.id !== id));
   };
 
-  const reorder = (tabId: string, fromIndex: number, toIndex: number) => {
+  const reorder = (tabId: string, toIndex: number) => {
     const beforeTab = tabs.find(tab => tab.id === tabId);
     if (!beforeTab) return;
     let newTabs = tabs.filter(tab => tab.id !== tabId);

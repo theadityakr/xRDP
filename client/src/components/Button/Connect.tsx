@@ -7,7 +7,7 @@ interface ConnectButtonProps {
 
 const ConnectButton: React.FC<ConnectButtonProps> = ({ onClick }) => {
   return (
-    <Button label="Connect" type="empty" onClick={onClick} />
+    <Button label="Connect" type="filled" size = "large" onClick={onClick} />
   );
 };
 
