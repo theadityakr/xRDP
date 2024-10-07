@@ -12,7 +12,7 @@ use crate::app::client::start_client;
 
 
 #[tauri::command]
-async fn connect(connection_settings: String)  {
+async fn connect(connection_settings: String) -> Result<String, String> {
 
     // get data store in the VM using client hostname folder XXXX/netw...2024..txt
     // match network_check().await {
@@ -21,8 +21,14 @@ async fn connect(connection_settings: String)  {
     // }
 
     match start_client(connection_settings).await {
-        Ok(_) => println!("Connection Started successfully"),
-        Err(e) => eprintln!("Connection Failed: {}", e),
+        Ok(_) => {
+            // println!("Connection Started successfully");
+            Ok("Connection Started successfully".to_string().into()) 
+        },
+        Err(e) => {
+            // eprintln!("Connection Failed: {}", e);
+            Err(format!("Connection Failed: {}", e).into()) 
+        }
     }
 
 }
