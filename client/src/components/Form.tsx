@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { toast } from 'sonner';
 
 import '../styles/form.css';
 import InputText from "./Input/InputText";
 import ConnectButton from "./Button/Connect";
 import SettingDialogBox from "./Input/SettingDialogBox";
+
 
 const Form: React.FC<any> = () => {
   const [formState, setFormState] = useState({
@@ -45,13 +47,10 @@ const Form: React.FC<any> = () => {
         clipboard: formState.advancedSettings.includes('clipboard'),
       },
     };
-
-    
-
     try {
       const connectionSettings =  JSON.stringify(data, null, 2);
-      console.log(connectionSettings);
-      invoke('connect',{connectionSettings}).then((message)=> console.log(message));
+      // console.log(connectionSettings);
+      invoke('connect',{connectionSettings}).then((message)=> {console.log(message); toast.error("message")});
     } catch (error) {
       console.error("Error sending form data:", error);
     }
@@ -68,7 +67,7 @@ const Form: React.FC<any> = () => {
         <p>Computer</p>
         <InputText
           onChange={handleInputChange('computer')}
-          placeholderName="Enter IP address, add any specific port"
+          placeholderName="Enter IP address:port"
           size="large"
         />
       </div>
