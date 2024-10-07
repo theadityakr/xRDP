@@ -1,9 +1,9 @@
 :root {
-  --text-light:#1dbac5;
+  --text-light:#ffffff;
   --text-grey:#89898b;
-  --text-dark:#398894;
-  --text-lightgrey:#c2c2c5;
-  --text-white:#e5f1fc;
+  --text-dark:#000000;
+  --text-lightgrey:hsl(240 3.8% 46.1%);
+  --text-off-white:#e5f1fc;
 
   --appbar-background:var(--text-light);
 
@@ -11,14 +11,15 @@
 
   --background-grey:#aecfd4;
   --background-dark:#13121d;
-  --background-light: var(--text-light);
+  --background-light: 0 0% 100%;
 
   --empty:transparent;
   --empty-hover:var(--text-dark);
 
   --filled:var(--text-dark);
-  --filled-hover:#f5b9bf;
-  --border-color:#3e93a0;
+  --filled-hover:#303030;
+  --border: #e5e7eb;
+  --input-border:hsl(240 5.9% 90%);
 
 }
 *{
@@ -27,19 +28,25 @@
 }
 
 body {
-  background-color:var(--background-dark) ;
+  background-color:var(--background-light) ;
   font-family: "Poppins", sans-serif;
-    font-weight: 400;
+    font-weight: 500;
     font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scrollbar-width: thin;
   scrollbar-color: rgb(223, 223, 223) transparent;
-  color: var(--text-lightgrey);
+  color: var(--text-dark);
+  font-size: .875rem;
+  line-height: 1.25rem;
 }
 
 p{
-  font-size:15px;
+  color: var(--text-lightgrey);
+  /* font-weight: 200; */
+  /* font-size: small; */
+  /* word-wrap: break-word; */
+  line-height: 1.25rem;
 }
 
 
@@ -185,9 +192,12 @@ p{
 }
 
 h2{
-  margin-bottom:3vh;
-  text-align-last: center;
-  color: var(--text-light);
+  margin-bottom:0.5vh;
+  font-size: 1.5rem;
+  font-weight :600;
+  letter-spacing: -.025em;
+  /* text-align-last: center; */
+  /* color: var(--text-light); */
 }
 /* 
 @media only screen  and (max-width: 700px){

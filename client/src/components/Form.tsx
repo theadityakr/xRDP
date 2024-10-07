@@ -60,7 +60,10 @@ const Form: React.FC<any> = () => {
   return (
     <div className="flex-column form-container">
     <div className="flex-column connection-details-form">
-      <h2>Remote Desktop Connection</h2>
+      <div className="flex-col form-container-header">
+        <h2>Remote Desktop Connection</h2>
+        <p>Add Computer IP and Account username and password for login.</p>
+      </div>
       <div className="flex-row inputfield">
         <p>Computer</p>
         <InputText

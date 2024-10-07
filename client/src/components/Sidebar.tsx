@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { LuMonitorDot } from "react-icons/lu";
 import { TbSmartHome } from "react-icons/tb";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";

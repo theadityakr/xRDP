@@ -16,14 +16,14 @@
 }
 
 .dialog-box{
-    border: 1px solid #0E5CC929;
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.8vh 2vw;
 }
 
 h4{
     margin-bottom:1.5vh;
-    color:var(--text-dark)
+    color:var(--text-grey)
 }
 
 .settings-grid{
@@ -69,7 +69,7 @@ input[type="checkbox"] {
   }
 
   input {
-    border: 1px solid var(--text-dark);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     padding: 10px;
     width: 100%;
@@ -79,7 +79,7 @@ input[type="checkbox"] {
   }
   
   input:focus {
-    border-color: var(--text-light);
+    border-color: var(--text-dark);
     color:#ccc;
     outline: none;
   }

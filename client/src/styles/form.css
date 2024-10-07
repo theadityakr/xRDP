@@ -1,17 +1,24 @@
+.form-container-header{
+    /* gap: -10vh; */
+    margin-bottom: 2vh;;
+}
+
 .connection-details-form{
     /* background-color: green; */
     gap:2vh
 }
 
 .connection-details-form > .inputfield{
- gap:3vw;
+ gap:0.5vh;
 }
 
 .form-container,.active-devices-super-container{
-    border: 1px solid #3a77cc50;
+    box-sizing: border-box;
+    /* border-width: 1px; */
+    border:  1px solid var(--border);
     border-radius: 12px;
     padding: 3.5vh 2.5vw;
-    box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+    /* box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px; */
 }
 
 .active-devices-super-container{
