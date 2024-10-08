@@ -1,6 +1,6 @@
 #![allow(unused)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
+use std::sync::Arc;
 pub mod app {
         pub mod network;
         pub mod client;
@@ -20,20 +20,31 @@ async fn connect(connection_settings: String) -> Result<String, String> {
     //     Err(e) => eprintln!("Network check failed: {}", e),
     // }
 
-    match start_client(connection_settings).await {
-        Ok(_) => {
-            // println!("Connection Started successfully");
-            Ok("Connection Started successfully".to_string().into()) 
-        },
-        Err(e) => {
-            // eprintln!("Connection Failed: {}", e);
-            Err(format!("Connection Failed: {}", e).to_string().into()) 
-        }
+    // match start_client(connection_settings).await {
+    //     Ok(_) => {
+    //         // println!("Connection Started successfully");
+    //         Ok("Connection Started successfully".to_string().into()) 
+    //     },
+    //     Err(e) => {
+    //         // eprintln!("Connection Failed: {}", e);
+    //         Err(format!("Connection Failed: {}", e).to_string().into()) 
+    //     }
+    // }
+    let connection_settings = Arc::new(connection_settings);
+    let result = tokio::spawn(async move {
+        start_client(&connection_settings).await
+    }).await;
+
+    match result {
+        Ok(Ok(_)) => Ok("Connection Started successfully".to_string()),
+        Ok(Err(e)) => Err(format!("Connection Failed: {}", e)),
+        Err(e) => Err(format!("Task panicked: {}", e)),
     }
 
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![connect])
         .run(tauri::generate_context!())
