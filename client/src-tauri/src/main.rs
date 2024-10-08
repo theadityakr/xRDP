@@ -27,7 +27,7 @@ async fn connect(connection_settings: String) -> Result<String, String> {
         },
         Err(e) => {
             // eprintln!("Connection Failed: {}", e);
-            Err(format!("Connection Failed: {}", e).into()) 
+            Err(format!("Connection Failed: {}", e).to_string().into()) 
         }
     }
 

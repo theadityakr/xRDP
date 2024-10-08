@@ -48,9 +48,20 @@ const Form: React.FC<any> = () => {
       },
     };
     try {
+      data.computer = "38.126.136.103:3000";
+      data.username = "Administrator";
+      data.password = "Life@is@2";
       const connectionSettings =  JSON.stringify(data, null, 2);
-      // console.log(connectionSettings);
-      invoke('connect',{connectionSettings}).then((message)=> {console.log(message); toast.error("message")});
+      console.log(connectionSettings);
+      invoke('connect', { connectionSettings })
+      .then((message: any) => {
+        console.log(message);
+        toast.error(String(message));
+      })
+      .catch((error) => {
+        console.error("Error sending form data:", error);
+      });
+
     } catch (error) {
       console.error("Error sending form data:", error);
     }

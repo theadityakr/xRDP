@@ -9,6 +9,7 @@ use image::{ImageBuffer, Rgba};
 use std::sync::Arc;
 use tokio::net::tcp::OwnedReadHalf;
 
+
 struct RemoteDesktopWidget {
     image: Arc<Mutex<Option<ImageBuf>>>,
     updated: bool,  // track if new image data was received
