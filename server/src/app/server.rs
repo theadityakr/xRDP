@@ -86,31 +86,28 @@ async fn run_remote_desktop_server(socket: TcpStream) -> Result<(), Box<dyn std:
 }
 
 pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
-
-
+    
     let listener = TcpListener::bind("0.0.0.0:3000").await?;
+    println!("Server listening on 0.0.0.0:3000");
 
     loop {
         let (mut socket, addr) = listener.accept().await?;
         println!("Connection received from: {}", addr);
 
-        // Read credentials from client
         let mut buffer = [0; 1024];
         let n = socket.read(&mut buffer).await.unwrap();
-        let received_data = String::from_utf8_lossy(&buffer[..n]);
-        let credentials: auth::Credentials = serde_json::from_str(&received_data).unwrap();
-        println!("Received credentials: {:?}", credentials);
+        let connection_settings = String::from_utf8_lossy(&buffer[..n]);
 
-        match auth::authenticate_user(credentials) {
+        match auth::authenticate_user(connection_settings.to_string()).await {
             Ok(token) => {
-                let error_message = "Authentication Successful";
-                socket.write_all(error_message.as_bytes()).await?;
-                socket.flush().await?;
+                // let message = "Authentication Successful";
+                // socket.write_all(message.as_bytes()).await?;
+                // socket.flush().await?;
 
                 // tokio::spawn(async move {
-                    if let Err(e) = run_remote_desktop_server(socket).await {
-                        eprintln!("Error in start function: {}", e);
-                    }
+                if let Err(e) = run_remote_desktop_server(socket).await {
+                    eprintln!("Error in start function: {}", e);
+                }
                 // });
                 unsafe { CloseHandle(token) };
             },
