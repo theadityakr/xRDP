@@ -5,6 +5,7 @@ mod app{
     pub mod helper;
     pub mod auth;
     pub mod read_inputs;
+    pub mod stream;
 }
 
 use crate::app::server::server;
