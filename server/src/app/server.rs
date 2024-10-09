@@ -3,20 +3,13 @@ use tokio::io::{AsyncReadExt, ReadHalf, WriteHalf,AsyncWriteExt};
 use winapi::um::handleapi::CloseHandle;
 use winapi::um::winnt::HANDLE;
 use std::io::Error as IoError;
-use winapi::um::winuser::{GetDesktopWindow, GetWindowDC, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN};
-use winapi::um::wingdi::{BitBlt, CreateCompatibleDC, CreateCompatibleBitmap, SelectObject, SRCCOPY};
-use winapi::shared::windef::{HWND, HDC, HBITMAP};
-use winapi::um::wingdi::DeleteDC;
-use winapi::um::wingdi::DeleteObject;
-use image::{ImageBuffer, Rgba};
-use lz4_flex::block::compress_prepend_size;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-// use crate::app::helper::get_local_ip;
 use crate::app::auth;
 use crate::app::read_inputs;
 use crate::app::stream;
+
 
 async fn run_remote_desktop_server(socket: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
 
@@ -41,9 +34,10 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
 
         match auth::authenticate_user(connection_settings.to_string()).await {
             Ok(token) => {
-                // let message = "Authentication Successful";
-                // socket.write_all(message.as_bytes()).await?;
-                // socket.flush().await?;
+                let message: bool = true;
+                let byte_message: u8 = if message { 1 } else { 0 };
+                socket.write_all(&[byte_message]).await?;
+                socket.flush().await?;
 
                 // tokio::spawn(async move {
                 if let Err(e) = run_remote_desktop_server(socket).await {
@@ -53,9 +47,9 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
                 unsafe { CloseHandle(token) };
             },
             Err(e) => {
-                println!("Authentication failed: {}", e);
-                let error_message = "Authentication failed: Incorrect Username / password";
-                socket.write_all(error_message.as_bytes()).await?;
+                let message: bool = false;
+                let byte_message: u8 = if message { 1 } else { 0 };
+                socket.write_all(&[byte_message]).await?;
                 socket.flush().await?;
             }
         }  

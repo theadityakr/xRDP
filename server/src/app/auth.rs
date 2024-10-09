@@ -74,9 +74,6 @@ pub async fn authenticate_user(connection_settings: String) -> Result<HANDLE, Bo
             &mut token
         )
     };
-
-    println!("{:?}",&token);
-    println!("{:?}",&result);
     if result == 0 {
         return Err("Authentication failed".into());
     }
