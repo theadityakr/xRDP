@@ -14,29 +14,19 @@ use crate::app::client::start_client;
 #[tauri::command]
 async fn connect(connection_settings: String) -> Result<String, String> {
 
-    // get data store in the VM using client hostname folder XXXX/netw...2024..txt
-    // match network_check().await {
-    //     Ok(_) => println!("Network check completed successfully"),
-    //     Err(e) => eprintln!("Network check failed: {}", e),
-    // }
-
-    // match start_client(connection_settings).await {
-    //     Ok(_) => {
-    //         // println!("Connection Started successfully");
-    //         Ok("Connection Started successfully".to_string().into()) 
-    //     },
-    //     Err(e) => {
-    //         // eprintln!("Connection Failed: {}", e);
-    //         Err(format!("Connection Failed: {}", e).to_string().into()) 
-    //     }
-    // }
     let connection_settings = Arc::new(connection_settings);
     let result = tokio::spawn(async move {
         start_client(&connection_settings).await
     }).await;
 
     match result {
-        Ok(Ok(_)) => Ok("Connection Started successfully".to_string()),
+        Ok(Ok(auth_success)) => {
+            if auth_success {
+                Ok("Connection Successful".to_string())
+            } else {
+                Err("Authentication failed!".to_string()) // Handle failed authentication
+            }
+        },
         Ok(Err(e)) => Err(format!("Connection Failed: {}", e)),
         Err(e) => Err(format!("Task panicked: {}", e)),
     }

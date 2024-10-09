@@ -55,15 +55,19 @@ const Form: React.FC<any> = () => {
       console.log(connectionSettings);
       invoke('connect', { connectionSettings })
       .then((message: any) => {
-        console.log(message);
-        toast.error(String(message));
+         console.log(message);
+         message = String(message);
+         if (message.split(' ')[1]==="Successful") toast.success(message);
+         else toast.error(message);
       })
       .catch((error) => {
-        console.error("Error sending form data:", error);
+        console.error("1 Error sending form data:", error);
+        toast.error(error);
       });
 
     } catch (error) {
-      console.error("Error sending form data:", error);
+      console.error("2 Error sending form data:", error);
+      toast.error(String(error));
     }
   };
 
