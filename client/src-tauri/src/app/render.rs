@@ -4,6 +4,7 @@ use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
 use minifb::{Window, WindowOptions, Key};
+use lz4_flex::decompress_size_prepended;
 
 const WIDTH: usize = 1920;
 const HEIGHT: usize = 1080;
@@ -32,7 +33,6 @@ pub async fn render_screen(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dy
                 for (i, chunk) in image_buffer.chunks_exact(4).enumerate() {
                     if i < buffer.len() {
                         if let [b, g, r, _] = chunk {
-                            // Directly use RGB values without any conversion
                             buffer[i] = u32::from_le_bytes([*b, *g, *r, 255]);
                         }
                     } else {
@@ -48,24 +48,30 @@ pub async fn render_screen(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dy
     });
 
     loop {
+        // Step 1: Read the compressed data size from the stream
         let mut size_buffer = [0u8; 8];
         stream.read_exact(&mut size_buffer).await?;
-        let image_size = u64::from_le_bytes(size_buffer) as usize;
+        let compressed_size = u64::from_le_bytes(size_buffer) as usize;
+    
+        println!("Received compressed size: {}", compressed_size);
+        
+        // Step 2: Read the compressed data from the stream
+        let mut compressed_data = vec![0u8; compressed_size];
+        stream.read_exact(&mut compressed_data).await?;
+    
+        println!("Received compressed data: {:?}", &compressed_data[..10]);
+        
+        // Step 3: Decompress the data
+        let decompressed_data = decompress_size_prepended(&compressed_data)?;
+    
+        println!("Decompressed data length: {}", decompressed_data.len());
 
-        println!("Received image size: {}", image_size);
-
-        if image_size > MAX_BUFFER_SIZE || image_size == 0 {
-            return Err(format!("Invalid image size: {} bytes", image_size).into());
+        // Step 4: Check if the decompressed data has a valid size
+        if decompressed_data.len() != MAX_BUFFER_SIZE {
+            return Err(format!("Invalid image size: {} bytes", decompressed_data.len()).into());
         }
 
-        let mut buffer = vec![0u8; image_size];
-        stream.read_exact(&mut buffer).await?;
-
-        println!("Read buffer of size: {}", buffer.len());
-        if !buffer.is_empty() {
-            println!("First byte: {:x}", buffer[0]);
-        }
-
-        tx.send(buffer).map_err(|e| format!("Failed to send buffer: {}", e))?;
+        // Step 5: Send the decompressed data to the rendering thread
+        tx.send(decompressed_data).map_err(|e| format!("Failed to send buffer: {}", e))?;
     }
 }
