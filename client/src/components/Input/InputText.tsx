@@ -6,6 +6,7 @@ interface InputTextProps {
   placeholderName?: string;
   onChange: (value: string) => void; 
   size?: 'small' | 'medium' | 'large';
+  type?: string;
 }
 
 const InputText: React.FC<InputTextProps> = ({onChange, size = 'medium', placeholderName = '....' }) => {
