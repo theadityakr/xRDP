@@ -65,27 +65,25 @@
     }
   } */
 
-  .dropdown-container {
+  .dropdown-container ,.password-container{
     position: relative;
     
   }
 
-  /* The dropdown list */
 .dropdown-list {
     position: absolute;
-    top: 100%; /* Ensure it appears below the input field */
+    top: 100%; 
     left: 0;
     right: 0;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    max-height: 200px; /* Set max height for scrolling */
-    overflow-y: auto; /* Enable scroll when list is long */
+    max-height: 200px; 
+    overflow-y: auto; 
     z-index: 10;
   }
-  
-  /* Each item in the dropdown */
+ 
   .dropdown-item {
     padding: 4px;
     cursor: pointer;
@@ -93,20 +91,13 @@
     transition: background-color 0.2s;
   }
   
-  /* Hover effect for dropdown items */
   .dropdown-item:hover {
     background-color: #f0f0f0;
   }
   
-  /* Style for when there's no match in saved logins */
   .dropdown-item.no-match {
     color: #999;
     cursor: default;
-  }
-
-  .password-container {
-    position: relative;
-    /* width: 100%; */
   }
 
   .password-toggle-icon,.dropdown-icon {

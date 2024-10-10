@@ -18,14 +18,18 @@ const Form: React.FC<any> = () => {
     advancedSettings: [] as string[],
   });
 
-  const [savedLogins, setSavedLogins] = useState<any[]>([]); // Saved previous logins
-  const [showDropdown, setShowDropdown] = useState(false); // Controls dropdown visibility
+  const [savedLogins, setSavedLogins] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false); 
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  // Load saved logins from localStorage on component mount
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  }
+  
   useEffect(() => {
     const logins = localStorage.getItem("savedLogins");
     if (logins) {
@@ -38,7 +42,7 @@ const Form: React.FC<any> = () => {
       ...prevState,
       [field]: value,
     }));
-    if (field === 'computer') setShowDropdown(true); // Show dropdown when typing in computer field
+    if (field === 'computer') setShowDropdown(true); 
   };
 
   const handleLoginSelection = (computer: string) => {
@@ -52,7 +56,7 @@ const Form: React.FC<any> = () => {
         advancedSettings: loginDetails.advancedSettings,
       });
     }
-    setShowDropdown(false); // Hide dropdown after selection
+    setShowDropdown(false); 
   };
 
   const handleCheckboxChange = (section: string, values: string[]) => {
@@ -93,7 +97,6 @@ const Form: React.FC<any> = () => {
           toast.error(error);
         });
 
-      // Save login to localStorage
       const newLogin = {
         computer: formState.computer,
         username: formState.username,
@@ -126,12 +129,12 @@ const Form: React.FC<any> = () => {
                 type="text"
                 value={formState.computer}
                 onChange={(e) => handleInputChange('computer')(e.target.value)}
-                onFocus={() => setShowDropdown(true)} // Show dropdown on focus
+                onFocus={() => setShowDropdown(true)} 
                 placeholder="Enter IP address:port "
                 className="input large"
               />
-              <span className="dropdown-icon"><IoIosArrowDown /></span>
-              {/* Dropdown for previously saved logins */}
+              <span className="dropdown-icon" onClick={toggleDropdown}><IoIosArrowDown /></span>
+              
               {showDropdown && savedLogins.length > 0 && (
                 <ul className="dropdown-list">
                   {savedLogins
@@ -154,6 +157,8 @@ const Form: React.FC<any> = () => {
       <div className="flex-row inputfield">
         <p>Username</p>
         <InputText
+          type="text"
+          value={formState.username}
           onChange={handleInputChange('username')}
           placeholderName="Enter username of the VM"
           size="large"
@@ -163,12 +168,12 @@ const Form: React.FC<any> = () => {
       <div className="flex-row inputfield">
         <p>Password</p>
           <div className="password-container">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={formState.password}
-            onChange={(e) => handleInputChange('password')(e.target.value)}
-            placeholder="Enter password of the VM"
-            className="password-input input large"
+          <InputText
+            type={showPassword ? "text" : "password"} 
+            value={formState.password} 
+            onChange={handleInputChange('password')}
+            placeholderName="Enter password of the VM"
+            size="large"
           />
           <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
             {showPassword ? <IoMdEyeOff /> : <IoMdEye />}
