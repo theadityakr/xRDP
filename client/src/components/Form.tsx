@@ -105,10 +105,21 @@ const Form: React.FC<any> = () => {
         advancedSettings: formState.advancedSettings,
       };
 
-      const updatedLogins = [...savedLogins, newLogin];
-      setSavedLogins(updatedLogins);
-      localStorage.setItem("savedLogins", JSON.stringify(updatedLogins));
+      const existingLoginIndex = savedLogins.findIndex(login => login.computer === formState.computer);
 
+      if (existingLoginIndex > -1) {
+        // Update existing login details
+        const updatedLogins = [...savedLogins];
+        updatedLogins[existingLoginIndex] = newLogin;
+        setSavedLogins(updatedLogins);
+        localStorage.setItem("savedLogins", JSON.stringify(updatedLogins));
+      } else {
+        // Add new login details
+        const updatedLogins = [...savedLogins, newLogin];
+        setSavedLogins(updatedLogins);
+        localStorage.setItem("savedLogins", JSON.stringify(updatedLogins));
+      }
+  
     } catch (error) {
       console.error(error);
       toast.error(String(error));
@@ -190,7 +201,7 @@ const Form: React.FC<any> = () => {
             { label: 'Local Drives Redirection', value: 'local_drives_redirection' },
           ]}
           selectedValues={formState.generalSettings}
-          onChange={(section, values) => handleCheckboxChange('generalSettings', values)}
+          onChange={(_, values) => handleCheckboxChange('generalSettings', values)}
         />
       </div>
 
@@ -202,7 +213,7 @@ const Form: React.FC<any> = () => {
             { label: 'Clipboard', value: 'clipboard' },
           ]}
           selectedValues={formState.advancedSettings}
-          onChange={(section, values) => handleCheckboxChange('advancedSettings', values)}
+          onChange={(_, values) => handleCheckboxChange('advancedSettings', values)}
         />
       </div>
 
