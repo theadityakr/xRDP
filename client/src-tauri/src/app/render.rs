@@ -1,102 +1,71 @@
-use druid::widget::prelude::*;
-use druid::{AppLauncher, WindowDesc, Widget, PlatformError, ImageBuf, ExtEventSink, Target};
-use druid::piet::{Image, InterpolationMode};
 use tokio::net::TcpStream;
-use tokio::io::AsyncReadExt;
-use tokio::sync::Mutex;
-use lz4_flex::block::decompress_size_prepended;
-use image::{ImageBuffer, Rgba};
-use std::sync::Arc;
-use tokio::net::tcp::OwnedReadHalf;
+use tokio::io::{AsyncReadExt, ReadHalf};
+use std::error::Error;
+use std::sync::mpsc;
+use std::thread;
+use minifb::{Window, WindowOptions, Key};
 
-struct RemoteDesktopWidget {
-    image: Arc<Mutex<Option<ImageBuf>>>,
-    updated: bool,  // track if new image data was received
-}
+const WIDTH: usize = 1920;
+const HEIGHT: usize = 1080;
+const MAX_BUFFER_SIZE: usize = WIDTH * HEIGHT * 4;
 
-impl Widget<()> for RemoteDesktopWidget {
-    fn event(&mut self, _ctx: &mut EventCtx, _event: &Event, _data: &mut (), _env: &Env) {}
-    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle, _data: &(), _env: &Env) {}
-    fn update(&mut self, ctx: &mut UpdateCtx, _old_data: &(), _data: &(), _env: &Env) {
-        if self.updated {
-            ctx.request_paint();
-            self.updated = false;
-        }
-    }
-    fn layout(&mut self, _ctx: &mut LayoutCtx, bc: &BoxConstraints, _data: &(), _env: &Env) -> Size {
-        bc.max()
-    }
-    fn paint(&mut self, ctx: &mut PaintCtx, _data: &(), _env: &Env) {
-        if let Some(image_buf) = self.image.blocking_lock().as_ref() {
-            let size = ctx.size();
-            // if let Ok(image) = ctx.make_image(image_buf.size().width, image_buf.size().height, image_buf.raw_pixels(), druid::piet::ImageFormat::RgbaPremul) {
-            //     ctx.draw_image(&image, size.to_rect(), InterpolationMode::Bilinear);
-            // }
+pub async fn render_screen(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let (tx, rx) = mpsc::channel::<Vec<u8>>();
 
-            if let Ok(image) = ctx.make_image(
-                image_buf.size().width as usize,   // Cast width to usize
-                image_buf.size().height as usize,  // Cast height to usize
-                image_buf.raw_pixels(),
-                druid::piet::ImageFormat::RgbaPremul
-            ) {
-                ctx.draw_image(&image, size.to_rect(), InterpolationMode::Bilinear);
+    thread::spawn(move || {
+        let mut window = Window::new(
+            "Remote Desktop",
+            WIDTH,
+            HEIGHT,
+            WindowOptions::default(),
+        )
+        .unwrap_or_else(|e| {
+            panic!("Failed to create window: {}", e);
+        });
+
+        let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
+
+        while window.is_open() && !window.is_key_down(Key::Escape) {
+            if let Ok(image_buffer) = rx.try_recv() {
+                println!("Received buffer of size: {}", image_buffer.len());
+                
+                for (i, chunk) in image_buffer.chunks_exact(4).enumerate() {
+                    if i < buffer.len() {
+                        if let [b, g, r, _] = chunk {
+                            // Directly use RGB values without any conversion
+                            buffer[i] = u32::from_le_bytes([*b, *g, *r, 255]);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                
+                println!("First pixel value: {:x}", buffer[0]);
             }
-            
-        }
-    }
-}
 
-async fn receive_screen_data(mut stream: OwnedReadHalf, image: Arc<Mutex<Option<ImageBuf>>>, event_sink: ExtEventSink) -> Result<(), Box<dyn std::error::Error>> {
-    let mut size_buffer = [0u8; 4];
-    loop {
-        stream.read_exact(&mut size_buffer).await?;
-        let size = u32::from_le_bytes(size_buffer) as usize;
-
-        let mut compressed_data = vec![0u8; size];
-        stream.read_exact(&mut compressed_data).await?;
-
-        let decompressed_data = decompress_size_prepended(&compressed_data)?;
-        let img: ImageBuffer<Rgba<u8>, Vec<u8>> = image::ImageBuffer::from_raw(1920, 1080, decompressed_data)
-            .ok_or("Failed to create image buffer")?;
-
-        let image_buf = ImageBuf::from_raw(
-            img.into_raw(),
-            druid::piet::ImageFormat::RgbaPremul,
-            1920,
-            1080,
-        );
-
-        *image.lock().await = Some(image_buf);
-        
-        // Safely submit the update event
-        if let Err(e) = event_sink.submit_command(druid::Selector::new("UPDATE"), (), Target::Global) {
-            eprintln!("Failed to submit update command: {}", e);
-        }
-    }
-}
-
-pub async fn render_screen(mut stream: OwnedReadHalf) -> Result<(), PlatformError> {
-    let image = Arc::new(Mutex::new(None));
-    let image_for_widget = image.clone();
-
-    let window = WindowDesc::new(move || RemoteDesktopWidget { 
-            image: image_for_widget.clone(), 
-            updated: false,
-        })
-        .title("Remote Desktop Client")
-        .window_size((1920.0, 1080.0));
-
-    let launcher = AppLauncher::with_window(window);
-    let event_sink = launcher.get_external_handle();
-
-    let image_for_receiver = image.clone();
-    tokio::spawn(async move {
-        if let Err(e) = receive_screen_data(stream, image_for_receiver, event_sink).await {
-            eprintln!("Error receiving screen data: {}", e);
+            window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
         }
     });
 
-    launcher.launch(())?;
+    loop {
+        let mut size_buffer = [0u8; 8];
+        stream.read_exact(&mut size_buffer).await?;
+        let image_size = u64::from_le_bytes(size_buffer) as usize;
 
-    Ok(())
+        println!("Received image size: {}", image_size);
+
+        if image_size > MAX_BUFFER_SIZE || image_size == 0 {
+            return Err(format!("Invalid image size: {} bytes", image_size).into());
+        }
+
+        let mut buffer = vec![0u8; image_size];
+        stream.read_exact(&mut buffer).await?;
+
+        println!("Read buffer of size: {}", buffer.len());
+        if !buffer.is_empty() {
+            println!("First byte: {:x}", buffer[0]);
+        }
+
+        tx.send(buffer).map_err(|e| format!("Failed to send buffer: {}", e))?;
+    }
 }

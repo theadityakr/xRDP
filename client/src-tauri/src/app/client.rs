@@ -1,5 +1,5 @@
 use tokio::net::TcpStream;
-// use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use serde::{Serialize, Deserialize};
 use serde_json::Result as JsonResult;
 use tokio::task;
@@ -52,14 +52,22 @@ async fn initial_check(connection_settings: String) -> JsonResult<Credentials> {
     })
 }
 
-pub async fn start_client(connection_settings: String) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Error + Send + Sync>> {
 
-    let credentials = initial_check(connection_settings).await?;
-
-    let stream = TcpStream::connect(&credentials.address).await?;
+    let credentials = initial_check(connection_settings.to_string()).await?;
+    let mut stream = TcpStream::connect(&credentials.address).await?;
     println!("Connected to the server at {}", &credentials.address);
-
-    let (read_half, write_half) = stream.into_split();
+    stream.write_all(connection_settings.as_bytes()).await?;
+    
+    let mut buffer = [0u8; 1];
+    stream.read_exact(&mut buffer).await?;
+    let auth_success: bool = buffer[0] != 0;
+    if !auth_success {
+        println!("Authentication failed!");
+        return Ok(false);
+    }
+    println!("Authentication successful!");
+    let (read_half, write_half) =  tokio::io::split(stream);
 
     let render_task = task::spawn(async move {
         if let Err(e) = render::render_screen(read_half).await {
@@ -67,15 +75,12 @@ pub async fn start_client(connection_settings: String) -> Result<String, Box<dyn
         }
     });
 
-    let input_task = task::spawn(async move {
-        if let Err(e) = input::capture_and_send_input(write_half).await {
-            eprintln!("Failed to capture input: {}", e);
-        }
-    });
+    // let input_task = task::spawn(async move {
+    //     if let Err(e) = input::capture_and_send_input(write_half).await {
+    //         eprintln!("Failed to capture input: {}", e);
+    //     }
+    // });
 
-    let _ = tokio::join!(render_task, input_task);
-
-    Ok(credentials.address)
+    // let _ = tokio::join!(render_task, input_task);
+    Ok(true)
 }
-
-

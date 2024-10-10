@@ -64,3 +64,47 @@
         gap: 5vw; 
     }
   } */
+
+  .dropdown-container ,.password-container{
+    position: relative;
+    
+  }
+
+.dropdown-list {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 200px; 
+    overflow-y: auto; 
+    z-index: 10;
+  }
+ 
+  .dropdown-item {
+    padding: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .dropdown-item.no-match {
+    color: #999;
+    cursor: default;
+  }
+
+  .password-toggle-icon,.dropdown-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.2em;
+  }
