@@ -61,12 +61,12 @@ const Form: React.FC<any> = () => {
          else toast.error(message);
       })
       .catch((error) => {
-        console.error("1 Error sending form data:", error);
+        console.error(error);
         toast.error(error);
       });
 
     } catch (error) {
-      console.error("2 Error sending form data:", error);
+      console.error(error);
       toast.error(String(error));
     }
   };
