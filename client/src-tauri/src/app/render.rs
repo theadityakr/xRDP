@@ -1,5 +1,5 @@
 use tokio::net::TcpStream;
-use tokio::io::{AsyncReadExt, ReadHalf};
+use tokio::io::{AsyncReadExt, ReadHalf, AsyncWriteExt, WriteHalf};
 use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
@@ -10,7 +10,7 @@ const WIDTH: usize = 1920;
 const HEIGHT: usize = 1080;
 const MAX_BUFFER_SIZE: usize = WIDTH * HEIGHT * 4;
 
-pub async fn render_screen(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub async fn render_screen(mut stream: ReadHalf<TcpStream>,mut write_half:WriteHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
     let (tx, rx) = mpsc::channel::<Vec<u8>>();
 
     thread::spawn(move || {
