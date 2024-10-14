@@ -3052,6 +3052,7 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "chrono",
+ "core-graphics",
  "druid",
  "futures",
  "im",
