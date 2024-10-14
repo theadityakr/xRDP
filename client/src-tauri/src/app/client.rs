@@ -7,7 +7,7 @@ use tokio::io::{ReadHalf, WriteHalf};
 use std::error::Error;
 
 use crate::app::render;
-use crate::app::input;
+use crate::app::drive;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -67,10 +67,20 @@ pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Erro
         return Ok(false);
     }
     println!("Authentication successful!");
+
+    let client_drive_info = drive::ClientDriveInfo {
+        drive_letter: "C".to_string(),
+        mapped_drive_letter: "Z".to_string(),
+    };
+    let serialized_drive_info = serde_json::to_vec(&client_drive_info)?;
+    stream.write_all(&serialized_drive_info).await?;
+    println!("Drive information sent to the server.");
+
+
     let (read_half, write_half) =  tokio::io::split(stream);
 
     let render_task = task::spawn(async move {
-        if let Err(e) = render::render_screen(read_half).await {
+        if let Err(e) = render::render_screen(read_half, write_half).await {
             eprintln!("Failed to render screen: {}", e);
         }
     });
@@ -81,6 +91,6 @@ pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Erro
     //     }
     // });
 
-    // let _ = tokio::join!(render_task, input_task);
+    let _ = tokio::join!(render_task);
     Ok(true)
 }
