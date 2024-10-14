@@ -1,12 +1,14 @@
 use serde::{Serialize, Deserialize};
 use serde_json::Result as JsonResult;
 use std::error::Error;
-use winapi::um::winnt::HANDLE;
-use winapi::um::winuser::{DESKTOP_CREATEMENU, DESKTOP_CREATEWINDOW, DESKTOP_WRITEOBJECTS, DESKTOP_SWITCHDESKTOP};
-use winapi::um::winbase::{LogonUserW, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT};
-use std::ptr::null_mut;
-use std::ffi::OsStr;
-use std::os::windows::ffi::OsStrExt;
+use windows::Win32::Foundation::{HANDLE, BOOL};
+use winapi::um::handleapi::CloseHandle;
+use windows::Win32::Security::{
+    LogonUserW,
+    LOGON32_LOGON_INTERACTIVE,
+    LOGON32_PROVIDER_DEFAULT,
+};
+use windows::core::{PCWSTR, w};
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -51,34 +53,32 @@ async fn initial_check(connection_settings: String) -> JsonResult<Credentials> {
     })
 }
 
-fn to_wide_chars(s: &str) -> Vec<u16> {
-    OsStr::new(s).encode_wide().chain(std::iter::once(0)).collect()
+fn to_wide_string(s: &str) -> Vec<u16> {
+    s.encode_utf16().chain(std::iter::once(0)).collect()
 }
 
-pub async fn authenticate_user(connection_settings: String) -> Result<HANDLE, Box<dyn Error>> {
-
+pub async fn authenticate_user(connection_settings: String) -> Result<(HANDLE, String), Box<dyn Error>> {
     let credentials = initial_check(connection_settings).await?;
-    let username = to_wide_chars(&credentials.username);
-    let password = to_wide_chars(&credentials.password);
-    let domain = to_wide_chars(&credentials.address);
+    let username = to_wide_string(&credentials.username);
+    let password = to_wide_string(&credentials.password);
+    let domain = to_wide_string(&credentials.address);
 
-    let mut token: HANDLE = null_mut();
+    let mut token = HANDLE::default();
     
     let result = unsafe {
         LogonUserW(
-            username.as_ptr(),
-            domain.as_ptr(),
-            password.as_ptr(),
+            PCWSTR::from_raw(username.as_ptr()),
+            PCWSTR::from_raw(domain.as_ptr()),
+            PCWSTR::from_raw(password.as_ptr()),
             LOGON32_LOGON_INTERACTIVE,
             LOGON32_PROVIDER_DEFAULT,
             &mut token
         )
     };
-    if result == 0 {
-        return Err("Authentication failed".into());
+
+    if result.as_bool() {
+        Ok((token, credentials.username))
+    } else {
+        Err("Authentication failed".into())
     }
-
-    Ok(token)
 }
-
-  
