@@ -5,17 +5,23 @@ use winapi::um::winnt::HANDLE;
 use std::io::Error as IoError;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use std::net::SocketAddr;
 
 use crate::app::auth;
 use crate::app::read_inputs;
 use crate::app::stream;
+use crate::app::drive_protocol;
 
 
-async fn run_remote_desktop_server(socket: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
+async fn run_remote_desktop_server(socket: TcpStream,addr :SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
 
     let (mut read_half, mut write_half) = tokio::io::split(socket);
+
+    let client_drive_info = drive_protocol::receive_client_drive_info(&mut read_half).await?;
+    // drive_protocol::redirect_client_drives(&client_drive_info,addr).await?;
+
     stream::capture_and_stream(write_half).await?;
-    read_inputs::read_user_input_make_changes(read_half).await?;
+    // read_inputs::read_user_input_make_changes(read_half).await?;
     Ok(())
 }
 
@@ -40,7 +46,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>>  {
                 socket.flush().await?;
 
                 // tokio::spawn(async move {
-                if let Err(e) = run_remote_desktop_server(socket).await {
+                if let Err(e) = run_remote_desktop_server(socket,addr).await {
                     eprintln!("Error in start function: {}", e);
                 }
                 // });

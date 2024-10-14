@@ -5,6 +5,7 @@ mod app{
     pub mod auth;
     pub mod read_inputs;
     pub mod stream;
+    pub mod drive_protocol;
 }
 
 use crate::app::server::server;
