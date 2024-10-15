@@ -1,131 +1,67 @@
-use winapi::um::winuser::{INPUT_u, INPUT, INPUT_MOUSE, INPUT_KEYBOARD, MOUSEINPUT, KEYBDINPUT, SendInput};
-use winapi::shared::windef::POINT;
-use winapi::um::winuser::{GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN};
+use tokio::io::{AsyncReadExt, ReadHalf};
 use tokio::net::TcpStream;
-use tokio::io::{AsyncReadExt, ReadHalf, WriteHalf};
-use std::sync::Arc;
-use tokio::sync::Mutex;
+use serde::{Serialize, Deserialize};
+use std::error::Error;
+use minifb::{Window, WindowOptions, Key, MouseButton, MouseMode};
 
-pub async fn read_user_input_make_changes(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dyn std::error::Error>> {
-    let mut buffer = [0u8; 1024];
-
-    loop {
-        let n = stream.read(&mut buffer).await?;
-        if n == 0 {
-            // Connection closed
-            break;
-        }
-
-        // Parse the input from the buffer
-        let input = parse_input(&buffer[..n])?;
-
-        // Process the input
-        match input {
-            InputEvent::MouseMove { x, y } => simulate_mouse_move(x, y)?,
-            InputEvent::MouseClick { button, down } => simulate_mouse_click(button, down)?,
-            InputEvent::KeyPress { key_code, down } => simulate_key_press(key_code, down)?,
-        }
-    }
-
-    Ok(())
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum SerializableKey {
+    Backspace, Enter, Left, Right, Up, Down, Escape, // Add more keys as needed
 }
 
-enum InputEvent {
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum SerializableMouseButton {
+    Left, Right, Middle,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum InputEvent {
+    KeyPress(SerializableKey),
+    KeyRelease(SerializableKey),
     MouseMove { x: i32, y: i32 },
-    MouseClick { button: MouseButton, down: bool },
-    KeyPress { key_code: u16, down: bool },
+    MouseButtonPress(SerializableMouseButton),
+    MouseButtonRelease(SerializableMouseButton),
 }
 
-enum MouseButton {
-    Left,
-    Right,
-    Middle,
-}
+pub async fn read_user_input_make_changes(mut read_half: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
+    loop {
+        // Read the length of the serialized data
+        let mut len_bytes = [0u8; 4];
+        read_half.read_exact(&mut len_bytes).await?;
+        let len = u32::from_le_bytes(len_bytes) as usize;
 
-fn parse_input(buffer: &[u8]) -> Result<InputEvent, Box<dyn std::error::Error>> {
-    // Implement parsing logic here
-    // This is a placeholder implementation
-    Ok(InputEvent::MouseMove { x: 0, y: 0 })
-}
+        // Read the serialized data
+        let mut buffer = vec![0u8; len];
+        read_half.read_exact(&mut buffer).await?;
 
-fn simulate_mouse_move(x: i32, y: i32) -> Result<(), Box<dyn std::error::Error>> {
-    let screen_width = unsafe { GetSystemMetrics(SM_CXSCREEN) };
-    let screen_height = unsafe { GetSystemMetrics(SM_CYSCREEN) };
+        // Deserialize the input event
+        let event: InputEvent = bincode::deserialize(&buffer)?;
 
-    let normalized_x = (x as f32 / 65535.0 * screen_width as f32) as i32;
-    let normalized_y = (y as f32 / 65535.0 * screen_height as f32) as i32;
+        // Process the input event
+        match event {
+            InputEvent::KeyPress(key) => {
+                println!("Key pressed: {:?}", key);
+                // Implement key press logic here
+            }
+            InputEvent::KeyRelease(key) => {
+                println!("Key released: {:?}", key);
+                // Implement key release logic here
+            }
+            InputEvent::MouseMove { x, y } => {
+                println!("Mouse moved to: ({}, {})", x, y);
+                // Implement mouse move logic here
+            }
+            InputEvent::MouseButtonPress(button) => {
+                println!("Mouse button pressed: {:?}", button);
+                // Implement mouse button press logic here
+            }
+            InputEvent::MouseButtonRelease(button) => {
+                println!("Mouse button released: {:?}", button);
+                // Implement mouse button release logic here
+            }
+        }
 
-    let mut input = INPUT {
-        type_: INPUT_MOUSE,
-        u: unsafe { std::mem::zeroed() },
-    };
-    unsafe {
-        *input.u.mi_mut() = MOUSEINPUT {
-            dx: normalized_x,
-            dy: normalized_y,
-            mouseData: 0,
-            dwFlags: winapi::um::winuser::MOUSEEVENTF_MOVE | winapi::um::winuser::MOUSEEVENTF_ABSOLUTE,
-            time: 0,
-            dwExtraInfo: 0,
-        };
+        // Here you would typically update the server's state based on the input
+        // For example, moving the cursor, clicking, or typing in applications
     }
-
-    unsafe {
-        SendInput(1, &mut input, std::mem::size_of::<INPUT>() as i32);
-    }
-
-    Ok(())
-}
-
-fn simulate_mouse_click(button: MouseButton, down: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let mut input = INPUT {
-        type_: INPUT_MOUSE,
-        u: unsafe { std::mem::zeroed() },
-    };
-
-    let (down_flag, up_flag) = match button {
-        MouseButton::Left => (winapi::um::winuser::MOUSEEVENTF_LEFTDOWN, winapi::um::winuser::MOUSEEVENTF_LEFTUP),
-        MouseButton::Right => (winapi::um::winuser::MOUSEEVENTF_RIGHTDOWN, winapi::um::winuser::MOUSEEVENTF_RIGHTUP),
-        MouseButton::Middle => (winapi::um::winuser::MOUSEEVENTF_MIDDLEDOWN, winapi::um::winuser::MOUSEEVENTF_MIDDLEUP),
-    };
-
-    unsafe {
-        *input.u.mi_mut() = MOUSEINPUT {
-            dx: 0,
-            dy: 0,
-            mouseData: 0,
-            dwFlags: if down { down_flag } else { up_flag },
-            time: 0,
-            dwExtraInfo: 0,
-        };
-    }
-
-    unsafe {
-        SendInput(1, &mut input, std::mem::size_of::<INPUT>() as i32);
-    }
-
-    Ok(())
-}
-
-fn simulate_key_press(key_code: u16, down: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let mut input = INPUT {
-        type_: INPUT_KEYBOARD,
-        u: unsafe { std::mem::zeroed() },
-    };
-
-    unsafe {
-        *input.u.ki_mut() = KEYBDINPUT {
-            wVk: key_code,
-            wScan: 0,
-            dwFlags: if down { 0 } else { winapi::um::winuser::KEYEVENTF_KEYUP },
-            time: 0,
-            dwExtraInfo: 0,
-        };
-    }
-
-    unsafe {
-        SendInput(1, &mut input, std::mem::size_of::<INPUT>() as i32);
-    }
-
-    Ok(())
 }
