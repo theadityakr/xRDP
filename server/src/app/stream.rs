@@ -6,9 +6,9 @@ use winapi::um::wingdi::{BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, Del
 use winapi::um::winuser::{GetSystemMetrics, GetDesktopWindow, GetWindowDC, SM_CXSCREEN, SM_CYSCREEN};
 use tokio::io::WriteHalf;
 use tokio::net::TcpStream;
-use std::io::Error as IoError;
+use std::error::Error;
 
-pub async fn capture_and_stream(mut stream: WriteHalf<TcpStream>) -> Result<(), IoError> {
+pub async fn capture_and_stream(mut stream: WriteHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
     let desktop_window: HWND = unsafe { GetDesktopWindow() };
     let desktop_dc: HDC = unsafe { GetWindowDC(desktop_window) };
     let compatible_dc: HDC = unsafe { CreateCompatibleDC(desktop_dc) };

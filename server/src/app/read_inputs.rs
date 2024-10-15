@@ -23,7 +23,7 @@ pub enum InputEvent {
     MouseButtonRelease(SerializableMouseButton),
 }
 
-pub async fn read_user_input_make_changes(mut read_half: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error>> {
+pub async fn read_user_input_make_changes(mut read_half: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
     loop {
         // Read the length of the serialized data
         let mut len_bytes = [0u8; 4];

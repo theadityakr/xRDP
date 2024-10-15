@@ -13,6 +13,7 @@ use windows::Win32::System::RemoteDesktop::{
 use windows::Win32::Foundation::{HANDLE, CloseHandle};
 use windows::core::{PWSTR, PSTR, PCSTR};
 use rand::Rng;
+use tokio::task::LocalSet;
 
 use crate::app::auth;
 use crate::app::read_inputs;
@@ -28,10 +29,24 @@ struct Session {
 async fn run_remote_desktop_server(socket: TcpStream,addr: std::net::SocketAddr, username:String,  session_id: u32,) -> Result<(), Box<dyn Error + Send + Sync>> {
     let (mut read_half, mut write_half) = tokio::io::split(socket);
 
-    // let client_drive_info = drive_protocol::receive_client_drive_info(&mut read_half).await?;
-    // drive_protocol::redirect_client_drives(&client_drive_info,addr).await?;
-    stream::capture_and_stream(write_half).await?;
-    // read_inputs::read_user_input_make_changes(read_half).await?;
+    let local = LocalSet::new();
+
+    // Capture and stream screen data
+    local.spawn_local(async move {
+        if let Err(e) = stream::capture_and_stream(write_half).await {
+            eprintln!("Error handling client {}: {}", addr, e);
+        }
+    });
+
+    // Read user inputs and make changes
+    local.spawn_local(async move {
+        if let Err(e) = read_inputs::read_user_input_make_changes(read_half).await {
+            eprintln!("Error handling client {}: {}", addr, e);
+        }
+    });
+
+    local.await;
+
     Ok(())
 }
 
