@@ -45,8 +45,9 @@ const Form: React.FC<any> = () => {
     if (field === 'computer') setShowDropdown(true); 
   };
 
-  const handleLoginSelection = (computer: string) => {
-    const loginDetails = savedLogins.find(login => login.computer === computer);
+  const handleLoginSelection = (computer: string, username: string) => {
+    const loginDetails = savedLogins.find(login => login.computer === computer && login.username === username);
+
     if (loginDetails) {
       setFormState({
         computer: loginDetails.computer,
@@ -105,7 +106,7 @@ const Form: React.FC<any> = () => {
         advancedSettings: formState.advancedSettings,
       };
 
-      const existingLoginIndex = savedLogins.findIndex(login => login.computer === formState.computer);
+      const existingLoginIndex = savedLogins.findIndex(login => (login.computer === formState.computer && login.username === formState.username));
 
       if (existingLoginIndex > -1) {
         // Update existing login details
@@ -141,7 +142,7 @@ const Form: React.FC<any> = () => {
                 value={formState.computer}
                 onChange={(e) => handleInputChange('computer')(e.target.value)}
                 onFocus={() => setShowDropdown(true)} 
-                placeholder="Enter IP address:port "
+                placeholder="Enter IP address:port"
                 className="input large"
               />
               <span className="dropdown-icon" onClick={toggleDropdown}><IoIosArrowDown /></span>
@@ -153,10 +154,10 @@ const Form: React.FC<any> = () => {
                     .map((login, index) => (
                       <li
                         key={index}
-                        onClick={() => handleLoginSelection(login.computer)}
+                        onClick={() => handleLoginSelection(login.computer,login.username)}
                         className="dropdown-item"
                       >
-                        {login.computer}
+                        {login.computer} | {login.username}
                       </li>
                     ))}
                 </ul>

@@ -40,7 +40,12 @@
     align-items: center;
     gap: 0.9vw;
     padding: 1.5vh .5vw;
+    margin: 1vh 1vw;
     color: var(--text-grey);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    border-radius: 8px;   
 }
 
 .sidebar.collapsed .sidebar-item{
@@ -55,16 +60,20 @@
     display: inline
 }
 
-.sidebar-item:hover, .sidebar-item.active {
-    color: var(--text-dark);
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+.sidebar-item:hover{
+    color: var(--text-light);
+    background-color: #646464;
+    /* box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px; */
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
 }
 
 .sidebar-item.active {
+    color: var(--text-light);
     position: relative;
+    background-color: var(--filled);
 }
 
-.sidebar-item.active::before {
+/* .sidebar-item.active::before {
     content: "";
     position: absolute;
     margin-right:-0.4vw;
@@ -75,7 +84,7 @@
     height: 6px;
     background-color: var(--text-light);
     border-radius: 50%;
-}
+} */
 
 .content-container {
     transition: width 0.5s;
