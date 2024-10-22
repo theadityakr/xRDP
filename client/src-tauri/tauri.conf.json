@@ -19,7 +19,7 @@
     },
     "windows": [
       {
-        "title": "rdp",
+        "title": "xRDP",
         "width": 800,
         "height": 600
       }

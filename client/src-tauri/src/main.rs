@@ -4,9 +4,10 @@ use std::sync::Arc;
 pub mod app {
         pub mod network;
         pub mod client;
-        pub mod render;
-        pub mod input;
+        pub mod render_handler;
+        // pub mod input;
         pub mod drive;
+        pub mod window_handler;
         }
 use crate::app::network::network_check;
 use crate::app::client::start_client;

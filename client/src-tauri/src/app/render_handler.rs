@@ -32,7 +32,7 @@ fn get_screen_resolution() -> (usize, usize) {
     (1920, 1080) 
 }
 
-pub async fn render_screen(mut stream: ReadHalf<TcpStream>,mut write_half:WriteHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub async fn render_screen(mut stream: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
     let (tx, rx) = mpsc::channel::<Vec<u8>>();
     let (screen_width, screen_height) = get_screen_resolution();
     let max_buffer_size: usize = screen_width * screen_height * 4;
