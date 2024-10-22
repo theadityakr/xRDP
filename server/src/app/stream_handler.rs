@@ -59,7 +59,7 @@ pub async fn capture_and_stream(mut stream: WriteHalf<TcpStream>) -> Result<(), 
         stream.write_all(&compressed).await?;
 
         // Sleep for a short duration before the next capture
-        tokio::time::sleep(tokio::time::Duration::from_millis(30)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(33)).await;
     }
 
     // Cleanup resources
