@@ -1,6 +1,7 @@
 use futures::TryFutureExt;
 use tokio::net::{TcpListener,TcpStream};
 use tokio::io::{AsyncReadExt, ReadHalf, WriteHalf,AsyncWriteExt};
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::error::Error;
 use tokio::sync::Mutex;
@@ -16,32 +17,44 @@ use rand::Rng;
 use tokio::task::LocalSet;
 
 use crate::app::auth;
-use crate::app::read_inputs;
-use crate::app::stream;
+use crate::app::stream_handler;
+use crate::app::input_handler;
+// use crate::app::wts;
 // use crate::app::drive_protocol;
 
 
 struct Session {
     token: HANDLE,
-    session_id: u32,
+    addr: SocketAddr,
+    username : String,
 }
 
-async fn run_remote_desktop_server(socket: TcpStream,addr: std::net::SocketAddr, username:String,  session_id: u32,) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let (mut read_half, mut write_half) = tokio::io::split(socket);
+async fn run_remote_desktop_server(session_id: u32, stream: TcpStream, sessions: Arc<Mutex<HashMap<u32, Session>>>,) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let (mut read_half, mut write_half) = tokio::io::split(stream);
+
+    // tokio::spawn(async move {
+    //     if let Err(e) = stream_handler::capture_and_stream(write_half).await {
+    //         eprintln!("[capture_and_stream] [Error] [{}]: {}", &session_id, e);
+    //     }
+    // });
+
+    // tokio::spawn(async move {
+    //     if let Err(e) = input_handler::read_and_apply_input(read_half).await {
+    //         eprintln!("[read_and_apply_input] [Error] [{}]: {}", &session_id, e);
+    //     }
+    // });
 
     let local = LocalSet::new();
 
-    // Capture and stream screen data
     local.spawn_local(async move {
-        if let Err(e) = stream::capture_and_stream(write_half).await {
-            eprintln!("Error handling client {}: {}", addr, e);
+        if let Err(e) = stream_handler::capture_and_stream(write_half).await {
+            eprintln!("[capture_and_stream] [Error] [{}]: {}", &session_id, e);
         }
     });
 
-    // Read user inputs and make changes
     local.spawn_local(async move {
-        if let Err(e) = read_inputs::read_user_input_make_changes(read_half).await {
-            eprintln!("Error handling client {}: {}", addr, e);
+        if let Err(e) = input_handler::read_and_apply_input(read_half).await {
+            eprintln!("[read_and_apply_input] [Error] [{}]: {}", &session_id, e);
         }
     });
 
@@ -50,28 +63,47 @@ async fn run_remote_desktop_server(socket: TcpStream,addr: std::net::SocketAddr,
     Ok(())
 }
 
-async fn handle_client(mut socket: TcpStream, addr: std::net::SocketAddr, sessions: Arc<Mutex<HashMap<String, Session>>>,) -> Result<(), Box<dyn Error + Send + Sync>>{
+async fn handle_client(addr: SocketAddr, mut stream: TcpStream, sessions: Arc<Mutex<HashMap<u32, Session>>>,) -> Result<(), Box<dyn Error + Send + Sync>>{
     let mut buffer = [0; 1024];
-    let n = socket.read(&mut buffer).await?;
+    let n = stream.read(&mut buffer).await?;
     let credentials = String::from_utf8_lossy(&buffer[..n]);
 
     match auth::authenticate_user(credentials.to_string()).await {
         Ok((token, username)) => {
-            println!("{:?}",&token);
+            println!("[handle_client] [Debug] [token]: {:?}",&token);
             let session_id = create_or_get_session(token).await?;
 
-            println!("{:?}",&session_id);
-            let mut sessions = sessions.lock().await;
-            sessions.insert(username.clone(), Session { token, session_id });
+            println!("[handle_client]->[create_or_get_session] [Debug] [session_id]: {:?}",&session_id);
+            {
+                let mut sessions_lock = sessions.lock().await;
+                sessions_lock.insert(session_id, Session { token, addr, username });
+              
+            }
 
-            socket.write_all(&[1]).await?; 
-            socket.flush().await?;
+            if let Err(e) = stream.write_all(&[1]).await {
+                eprintln!("[handle_client] [Error] Failed to write auth success: {}", e);
+                return Err(Box::new(e));
+            }
 
-            run_remote_desktop_server(socket, addr, username, session_id).await;
+            if let Err(e) = stream.write_all(&session_id.to_le_bytes()).await {
+                eprintln!("[handle_client] [Error] Failed to write session_id: {}", e);
+                return Err(Box::new(e)); 
+            }
+
+            if let Err(e) = stream.flush().await {
+                eprintln!("[handle_client] [Error] Failed to flush stream: {}", e);
+                return Err(Box::new(e)); 
+            }
+            
+            run_remote_desktop_server(session_id, stream, sessions).await;
         },
         Err(_) => {
-            socket.write_all(&[0]).await?; 
-            socket.flush().await?;
+            if let Err(e) = stream.write_all(&[0]).await {
+                eprintln!("[handle_client] [Error] Failed to write auth failure: {}", e);
+            }
+            if let Err(e) = stream.flush().await {
+                eprintln!("[handle_client] [Error] Failed to flush auth failure: {}", e);
+            }
         }
     }
     Ok(())
@@ -81,7 +113,7 @@ async fn create_or_get_session(token: HANDLE) -> Result<u32, Box<dyn Error + Sen
     unsafe {
         let server_handle = WTSOpenServerA(PCSTR::null());
         if server_handle.is_invalid() {
-            return Err("Failed to open server".into());
+            return Err("[create_or_get_session] [Error] : Failed to open server".into());
         }
 
         let mut bytes_returned: u32 = 0;
@@ -97,7 +129,7 @@ async fn create_or_get_session(token: HANDLE) -> Result<u32, Box<dyn Error + Sen
 
         if !result.as_bool() {
             WTSCloseServer(server_handle);
-            return Err("Failed to query session information".into());
+            return Err("[create_or_get_session] [Error] : Failed to query session information".into());
         }
 
         let mut rng = rand::thread_rng();
@@ -123,20 +155,17 @@ async fn cleanup_session(token: HANDLE, session_id: u32) {
 
 pub async fn server() -> Result<(), Box<dyn Error + Send + Sync>> {
     let listener = TcpListener::bind("0.0.0.0:3000").await?;
-    println!("Server listening on 0.0.0.0:3000");
+    println!("[server] [Debug] : Server listening on 0.0.0.0:3000");
 
     let sessions = Arc::new(Mutex::new(HashMap::new()));
 
-    loop {
-        let (socket, addr) = listener.accept().await?;
-        println!("Connection received from: {}", addr);
-
+    while let Ok((stream, addr)) = listener.accept().await {
         let sessions = Arc::clone(&sessions);
-        handle_client(socket, addr, sessions).await?;
+        handle_client(addr, stream, sessions).await;
         // tokio::spawn(async move {
-        //     if let Err(e) = handle_client(socket, addr, sessions).await {
-        //         eprintln!("Error handling client {}: {}", addr, e);
-        //     }
+        //     handle_client(addr, stream, sessions).await;
         // });
     }
+
+    Ok(())
 }

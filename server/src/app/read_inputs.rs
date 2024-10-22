@@ -1,67 +1,64 @@
-use tokio::io::{AsyncReadExt, ReadHalf};
+use enigo::{Enigo, MouseControllable};
+use serde::{Deserialize};
+use tokio::io::{AsyncBufReadExt, BufReader, ReadHalf};
 use tokio::net::TcpStream;
-use serde::{Serialize, Deserialize};
-use std::error::Error;
-use minifb::{Window, WindowOptions, Key, MouseButton, MouseMode};
+use std::io::Result;
+use winapi::um::winuser::{VkKeyScanW, INPUT, SendInput, INPUT_KEYBOARD, KEYEVENTF_KEYUP};
+use std::mem::size_of;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub enum SerializableKey {
-    Backspace, Enter, Left, Right, Up, Down, Escape, // Add more keys as needed
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub enum SerializableMouseButton {
-    Left, Right, Middle,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum InputEvent {
-    KeyPress(SerializableKey),
-    KeyRelease(SerializableKey),
+#[derive(Deserialize, Debug)]
+enum InputEvent {
     MouseMove { x: i32, y: i32 },
-    MouseButtonPress(SerializableMouseButton),
-    MouseButtonRelease(SerializableMouseButton),
+    MouseClick,
+    KeyPress(char),
 }
 
-pub async fn read_user_input_make_changes(mut read_half: ReadHalf<TcpStream>) -> Result<(), Box<dyn Error + Send + Sync>> {
-    loop {
-        // Read the length of the serialized data
-        let mut len_bytes = [0u8; 4];
-        read_half.read_exact(&mut len_bytes).await?;
-        let len = u32::from_le_bytes(len_bytes) as usize;
+fn send_key_press(ch: char) {
+    unsafe {
+        let vk_code = VkKeyScanW(ch as u16) as u16;
 
-        // Read the serialized data
-        let mut buffer = vec![0u8; len];
-        read_half.read_exact(&mut buffer).await?;
+        // Key down event
+        let mut input = INPUT {
+            type_: INPUT_KEYBOARD,
+            u: std::mem::zeroed(),
+        };
 
-        // Deserialize the input event
-        let event: InputEvent = bincode::deserialize(&buffer)?;
+        input.u.ki_mut().wVk = vk_code;
+        SendInput(1, &mut input, size_of::<INPUT>() as i32);
 
-        // Process the input event
-        match event {
-            InputEvent::KeyPress(key) => {
-                println!("Key pressed: {:?}", key);
-                // Implement key press logic here
-            }
-            InputEvent::KeyRelease(key) => {
-                println!("Key released: {:?}", key);
-                // Implement key release logic here
-            }
-            InputEvent::MouseMove { x, y } => {
-                println!("Mouse moved to: ({}, {})", x, y);
-                // Implement mouse move logic here
-            }
-            InputEvent::MouseButtonPress(button) => {
-                println!("Mouse button pressed: {:?}", button);
-                // Implement mouse button press logic here
-            }
-            InputEvent::MouseButtonRelease(button) => {
-                println!("Mouse button released: {:?}", button);
-                // Implement mouse button release logic here
+        // Key up event
+        input.u.ki_mut().dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, &mut input, size_of::<INPUT>() as i32);
+    }
+}
+
+pub async fn read_and_apply_input(mut read_half: ReadHalf<TcpStream>) -> Result<()> {
+    let mut enigo = Enigo::new();
+    let reader = BufReader::new(read_half);
+    let mut lines = reader.lines();
+
+    while let Some(line) = lines.next_line().await? {
+        println!("Received data from client: {}", line);
+
+        if let Ok(event) = serde_json::from_str::<InputEvent>(&line) {
+            println!("Deserialized event: {:?}", event);
+
+            match event {
+                InputEvent::MouseMove { x, y } => {
+                    println!("Moving mouse to ({}, {})", x, y);
+                    enigo.mouse_move_to(x, y);
+                }
+                InputEvent::MouseClick => {
+                    println!("Mouse click event");
+                    enigo.mouse_click(enigo::MouseButton::Left);
+                }
+                InputEvent::KeyPress(ch) => {
+                    println!("Key press event: '{}'", ch);
+                    send_key_press(ch);  // Use winapi for key presses
+                }
             }
         }
-
-        // Here you would typically update the server's state based on the input
-        // For example, moving the cursor, clicking, or typing in applications
     }
+
+    Ok(())
 }

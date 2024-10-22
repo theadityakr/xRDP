@@ -3,9 +3,10 @@
 mod app{
     pub mod server;
     pub mod auth;
-    pub mod read_inputs;
-    pub mod stream;
+    pub mod stream_handler;
     pub mod drive_protocol;
+    pub mod input_handler;
+    // pub mod wts;
 }
 
 use crate::app::server::server;
