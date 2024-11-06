@@ -3,10 +3,10 @@ use tokio::io::{AsyncReadExt, ReadHalf, AsyncWriteExt, WriteHalf};
 use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
+use std::collections::HashSet;
 use minifb::{Window, WindowOptions, Key, MouseMode, MouseButton};
 use lz4_flex::decompress_size_prepended;
 
-// Input event enum remains the same
 #[derive(Debug)]
 enum InputEvent {
     KeyPress(Key),
@@ -19,29 +19,20 @@ enum InputEvent {
 #[cfg(target_os = "windows")]
 fn get_screen_resolution() -> (usize, usize) {
     use winapi::um::winuser::{GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN};
-
-    let width = unsafe { GetSystemMetrics(SM_CXSCREEN) } as usize;
-    let height = unsafe { GetSystemMetrics(SM_CYSCREEN) } as usize;
-
-    (width, height)
+    (unsafe { GetSystemMetrics(SM_CXSCREEN) as usize }, unsafe { GetSystemMetrics(SM_CYSCREEN) as usize })
 }
 
 #[cfg(target_os = "macos")]
 fn get_screen_resolution() -> (usize, usize) {
     use core_graphics::display::CGDisplay;
-
     let display = CGDisplay::main();
-    let width = display.pixels_wide() as usize;
-    let height = display.pixels_high() as usize;
-
-    (width, height)
+    (display.pixels_wide() as usize, display.pixels_high() as usize)
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 fn get_screen_resolution() -> (usize, usize) {
-    (1920, 1080) 
+    (1920, 1080)
 }
-
 
 pub async fn render_screen(
     mut read_stream: ReadHalf<TcpStream>,
@@ -94,7 +85,7 @@ pub async fn render_screen(
         }
     });
 
-    // Window handling thread remains mostly the same
+    // Window handling thread with debouncing for key events
     let window_handle = thread::spawn(move || {
         let mut window = Window::new(
             "Remote Desktop Client",
@@ -104,15 +95,14 @@ pub async fn render_screen(
                 scale: minifb::Scale::X1,
                 ..WindowOptions::default()
             },
-        )
-        .unwrap_or_else(|e| {
-            panic!("Failed to create window: {}", e);
-        });
+        ).expect("Failed to create window");
 
         let mut buffer: Vec<u32> = vec![0; screen_width * screen_height];
         let mut last_mouse_pos = (0, 0);
+        let mut pressed_keys = HashSet::new();
 
         while window.is_open() && !window.is_key_down(Key::Escape) {
+            // Update display buffer
             if let Ok(image_buffer) = rx.try_recv() {
                 for (i, chunk) in image_buffer.chunks_exact(4).enumerate() {
                     if i < buffer.len() {
@@ -123,36 +113,46 @@ pub async fn render_screen(
                 }
             }
 
-            if window.is_active() {
-                // Handle keyboard input
-                for key in window.get_keys() {
+            // Handle keyboard input with debouncing
+            for key in window.get_keys() {
+                if !pressed_keys.contains(&key) {
                     let _ = input_tx.send(InputEvent::KeyPress(key));
+                    pressed_keys.insert(key);
                 }
+            }
+            // Release keys that are no longer pressed
+            pressed_keys.retain(|&key| {
+                if !window.is_key_down(key) {
+                    let _ = input_tx.send(InputEvent::KeyRelease(key));
+                    false
+                } else {
+                    true
+                }
+            });
 
-                // Handle mouse movement
-                if let Some((x, y)) = window.get_mouse_pos(MouseMode::Pass) {
-                    let x = x as i32;
-                    let y = y as i32;
-                    if (x, y) != last_mouse_pos {
-                        let _ = input_tx.send(InputEvent::MouseMove { x, y });
-                        last_mouse_pos = (x, y);
-                    }
+            // Handle mouse movement
+            if let Some((x, y)) = window.get_mouse_pos(MouseMode::Pass) {
+                let x = x as i32;
+                let y = y as i32;
+                if (x, y) != last_mouse_pos {
+                    let _ = input_tx.send(InputEvent::MouseMove { x, y });
+                    last_mouse_pos = (x, y);
                 }
+            }
 
-                // Handle mouse buttons
-                for button in [MouseButton::Left, MouseButton::Right, MouseButton::Middle] {
-                    if window.get_mouse_down(button) {
-                        let _ = input_tx.send(InputEvent::MouseButton {
-                            button,
-                            pressed: true,
-                        });
-                    }
+            // Handle mouse buttons
+            for button in [MouseButton::Left, MouseButton::Right, MouseButton::Middle] {
+                if window.get_mouse_down(button) {
+                    let _ = input_tx.send(InputEvent::MouseButton {
+                        button,
+                        pressed: true,
+                    });
                 }
+            }
 
-                // Handle mouse scroll
-                if let Some(scroll) = window.get_scroll_wheel() {
-                    let _ = input_tx.send(InputEvent::MouseScroll(scroll.1 as i32));
-                }
+            // Handle mouse scroll
+            if let Some(scroll) = window.get_scroll_wheel() {
+                let _ = input_tx.send(InputEvent::MouseScroll(scroll.1 as i32));
             }
 
             window.update_with_buffer(&buffer, screen_width, screen_height).unwrap();
@@ -167,9 +167,11 @@ pub async fn render_screen(
         let mut compressed_data = vec![0u8; compressed_size];
         read_stream.read_exact(&mut compressed_data).await?;
         let decompressed_data = decompress_size_prepended(&compressed_data)?;
+
         if decompressed_data.len() != max_buffer_size {
             return Err(format!("Invalid image size: {} bytes", decompressed_data.len()).into());
         }
+
         tx.send(decompressed_data).map_err(|e| format!("Failed to send buffer: {}", e))?;
     }
 }

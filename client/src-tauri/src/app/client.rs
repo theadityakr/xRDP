@@ -85,7 +85,7 @@ pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Erro
 
     let (read_half, write_half) =  tokio::io::split(stream);
 
-    let render_task = task::spawn(async move {
+    task::spawn(async move {
         if let Err(e) = window_handler::render_screen(read_half, write_half).await {
             eprintln!("Failed to render screen: {}", e);
         }
@@ -97,6 +97,5 @@ pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Erro
     //     }
     // });
 
-    let _ = tokio::join!(render_task);
     Ok(true)
 }
