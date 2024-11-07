@@ -32,33 +32,17 @@ struct Session {
 async fn run_remote_desktop_server(session_id: u32, stream: TcpStream, sessions: Arc<Mutex<HashMap<u32, Session>>>,) -> Result<(), Box<dyn Error + Send + Sync>> {
     let (mut read_half, mut write_half) = tokio::io::split(stream);
 
-    // tokio::spawn(async move {
-    //     if let Err(e) = stream_handler::capture_and_stream(write_half).await {
-    //         eprintln!("[capture_and_stream] [Error] [{}]: {}", &session_id, e);
-    //     }
-    // });
-
-    // tokio::spawn(async move {
-    //     if let Err(e) = input_handler::read_and_apply_input(read_half).await {
-    //         eprintln!("[read_and_apply_input] [Error] [{}]: {}", &session_id, e);
-    //     }
-    // });
-
-    let local = LocalSet::new();
-
-    local.spawn_local(async move {
+    tokio::spawn(async move {
         if let Err(e) = stream_handler::capture_and_stream(write_half).await {
             eprintln!("[capture_and_stream] [Error] [{}]: {}", &session_id, e);
         }
     });
 
-    local.spawn_local(async move {
+    tokio::spawn(async move {
         if let Err(e) = input_handler::read_and_apply_input(read_half).await {
             eprintln!("[read_and_apply_input] [Error] [{}]: {}", &session_id, e);
         }
     });
-
-    local.await;
 
     Ok(())
 }
