@@ -65,6 +65,7 @@ pub async fn render_screen(
                         write_stream.flush().await?;
                     }
                     InputEvent::MouseButton { button, pressed } => {
+                        println!("[ InputEvent::MouseButton ] [Debug] [button,pressed]: [{:?},{}]",&button,&pressed);
                         let msg = format!("MOUSE_BUTTON:{:?}:{}\n", button, pressed);
                         write_stream.write_all(msg.as_bytes()).await?;
                         write_stream.flush().await?;

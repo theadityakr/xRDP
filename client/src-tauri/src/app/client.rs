@@ -91,11 +91,5 @@ pub async fn start_client(connection_settings: &str) -> Result<bool,Box<dyn Erro
         }
     });
 
-    // let input_task = task::spawn(async move {
-    //     if let Err(e) = input::capture_and_send_input(write_half).await {
-    //         eprintln!("Failed to capture input: {}", e);
-    //     }
-    // });
-
     Ok(true)
 }
