@@ -30,30 +30,38 @@ This project is a fast and memory-safe Remote Desktop Protocol (RDP) client and 
 1. **Clone the repository**:
 
     ```bash
-    git clone https://github.com/yourusername/fast-safe-rdp.git
-    cd fast-safe-rdp
+    git clone git@github.com:katalystaditya/xRDP.git
+    cd xrdp
     ```
 
 2. **Install Rust**:
 
     Ensure you have Rust installed. You can download it [here](https://www.rust-lang.org/tools/install).
+    
 
 3. **Install dependencies**:
 
     ```bash
+    1.client
+    cd client 
+    npm install
+
+    2.server
     cargo build
     ```
 
 4. **Run the server**:
 
     ```bash
-    cargo run --bin server
+    cd server
+    cargo run 
     ```
 
 5. **Run the client**:
 
     ```bash
-    cargo run --bin client
+    cd client
+    npm run tauri dev
     ```
 
 ## Usage
@@ -68,9 +76,6 @@ This project is a fast and memory-safe Remote Desktop Protocol (RDP) client and 
 - **Enhanced Compression**: Explore more advanced compression algorithms for higher efficiency.
 - **Encryption**: Add end-to-end encryption for enhanced data security.
 
-## Contributing
-
-Contributions are welcome! Feel free to submit pull requests to improve the project.
 
 ## License
 
@@ -78,4 +83,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For more information or support, contact [your.email@example.com](mailto:shivangi.24.verma@gmail.com).
+For more information or support, contact [aditya.kumar@katalystpartners.com](mailto:aditya.kumar@katalystpartners.com).
