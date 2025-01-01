@@ -12,12 +12,12 @@
   
 
   .button.filled {
-    background-color:var(--filled);
+    background-color: var(--filled-hover);
     color: var(--text-inside);
   }
   
   .button.filled:hover {
-    background-color: var(--filled-hover);
+    background-color:var(--filled);
     /* color: var(--text-inside); */
     
   }

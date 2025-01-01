@@ -4,13 +4,13 @@
 
   --text:#000000;
   --text-inside: #fff;
-  --text-grey:#89898b;
+  --text-grey:#5c5c5c;
   --selected:var(--text);
 
-  --background-grey:#c1cfd1;
+  --background-grey:#d1d1d1f5;
   --background: 0 0% 100%;
 
-  --empty:transparent;
+  --empty:var(--text);
   --empty-hover:var(--text);
 
   --filled:var(--text);
@@ -27,19 +27,19 @@ body[data-theme="dark"] {
 
   --text: #f1f1f1;
   --text-inside: #000000;
-  --text-grey: #89898b;
+  --text-grey: #bdbdbdd8;
   --selected: var(--text);
 
-  --background-grey: #c1cfd1;
-  --background: #141414;
+  --background-grey: #505050;
+  --background: #121212;
 
   --empty: transparent;
   --empty-hover: var(--text);
 
   --filled: var(--text);
   --filled-hover: var(--text-grey);
-  --border: #717172;
-  --input-border: hsl(240 5.9% 90%);
+  --border: #5252527e;
+  --input-border: hsla(240, 6%, 90%, 0.329);
 
   --appbar-background: var(--background);
 }
