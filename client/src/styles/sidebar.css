@@ -6,7 +6,7 @@
     font-weight: 500;
     height: 100vh;
     transition: width 0.5s;
-    box-shadow: rgb(127 126 126 / 35%) 0px 5px 15px;
+    box-shadow: rgba(216, 87, 87, 0.35) 0px 5px 15px;
 }
 
 .sidebar.collapsed {
