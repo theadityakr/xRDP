@@ -22,8 +22,13 @@
         "title": "xRDP",
         "width": 460,
         "height": 500,
-        "x": 730, 
-        "y": 240 
+        "center" : true,
+        "resizable": false,
+        "minimizable": true,
+        "maximizable": false,
+        "fullscreen": false,
+        "decorations": true,
+        "alwaysOnTop": false 
       }
     ],
     "security": {
