@@ -145,11 +145,8 @@ pub async fn server() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     while let Ok((stream, addr)) = listener.accept().await {
         let sessions = Arc::clone(&sessions);
-        handle_client(addr, stream, sessions).await;
-        // tokio::spawn(async move {
-        //     handle_client(addr, stream, sessions).await;
-        // });
+        handle_client(addr, stream, sessions).await?;
     }
-
+    
     Ok(())
 }
