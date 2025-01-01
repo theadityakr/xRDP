@@ -20,8 +20,10 @@
     "windows": [
       {
         "title": "xRDP",
-        "width": 800,
-        "height": 600
+        "width": 460,
+        "height": 500,
+        "x": 0, 
+        "y": 0 
       }
     ],
     "security": {

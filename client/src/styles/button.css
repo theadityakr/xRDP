@@ -13,18 +13,18 @@
 
   .button.filled {
     background-color:var(--filled);
-    color: var(--text-light);
+    color: var(--text-inside);
   }
   
   .button.filled:hover {
     background-color: var(--filled-hover);
-    /* color: var(--text-dark); */
+    /* color: var(--text-inside); */
     
   }
   
   .button.empty {
     background-color:var(--empty);
-    color: var(--text-dark);
+    color: var(--text);
     border: 1px solid var(--border);
   }
   
@@ -69,7 +69,7 @@
     border-radius:50%;
     padding: 5px 5px 0 5px;
     cursor: pointer;
-    color:var(--text-dark);
+    color:var(--text);
     background:transparent;
   }
 

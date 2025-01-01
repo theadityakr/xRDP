@@ -53,9 +53,9 @@ input[type="checkbox"] {
   }
   
   input[type="checkbox"]:checked {
-    background-color: var(--text-dark);
+    background-color: var(--text);
     padding:0;
-    border-color: var(--text-dark);
+    border-color: var(--text);
   }
   
   input[type="checkbox"]:checked::after {
@@ -88,8 +88,8 @@ input[type="checkbox"] {
   } */
   
   input:focus {
-    border-color: var(--text-dark);
-    /* color:var(--text-lightgrey); */
+    border-color: var(--text);
+    /* color:var(--textgrey); */
     outline: none;
     font-weight: normal;
   }

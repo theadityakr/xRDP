@@ -18,7 +18,7 @@ const Home: React.FC = () => {
   return (
     <>
       <div className="container">
-        <Sidebar onTabChange={handleTabChange} activeTab={activeTab} />
+        {/* <Sidebar onTabChange={handleTabChange} activeTab={activeTab} /> */}
         <div className="content-container">
           {activeTab === "Home" && <Form key="Home" />}
           {activeTab === "Devices" && <Devices key="Devices" />}
