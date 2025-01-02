@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { toast } from 'sonner';
 import {IoMdEye, IoMdEyeOff,IoIosArrowDown } from "react-icons/io";
@@ -21,6 +21,7 @@ const Form: React.FC<any> = () => {
   const [savedLogins, setSavedLogins] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false); 
   const [showPassword, setShowPassword] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -66,6 +67,19 @@ const Form: React.FC<any> = () => {
       [section]: values,
     }));
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = async () => {
 
@@ -136,7 +150,7 @@ const Form: React.FC<any> = () => {
       </div>
       <div className="flex-row inputfield">
         <p>Computer</p>
-        <div className="dropdown-container">
+        <div className="dropdown-container" ref={dropdownRef}>
           <input
                 type="text"
                 value={formState.computer}
