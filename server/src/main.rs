@@ -6,7 +6,8 @@ mod app{
     pub mod stream_handler;
     pub mod drive_protocol;
     pub mod input_handler;
-    // pub mod wts;
+    pub mod session_handler;
+    pub mod wts;
 }
 
 use crate::app::server::server;

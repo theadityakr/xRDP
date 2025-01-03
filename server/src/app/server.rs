@@ -6,20 +6,14 @@ use std::sync::Arc;
 use std::error::Error;
 use tokio::sync::Mutex;
 use std::collections::HashMap;
-use windows::Win32::System::RemoteDesktop::{
-    WTSOpenServerA, WTSCloseServer, WTSQuerySessionInformationA,
-    WTSDisconnectSession, WTSLogoffSession, WTS_CURRENT_SESSION,
-    WTSUserName, WTSClientProtocolType
-};
-use windows::Win32::Foundation::{HANDLE, CloseHandle};
-use windows::core::{PWSTR, PSTR, PCSTR};
-use rand::Rng;
+use windows::Win32::Foundation::HANDLE;
 use tokio::task::LocalSet;
 
 use crate::app::auth;
 use crate::app::stream_handler;
 use crate::app::input_handler;
-// use crate::app::wts;
+use crate::app::session_handler;
+use crate::app::wts::SessionManager;
 // use crate::app::drive_protocol;
 
 
@@ -52,34 +46,89 @@ async fn handle_client(addr: SocketAddr, mut stream: TcpStream, sessions: Arc<Mu
     let n = stream.read(&mut buffer).await?;
     let credentials = String::from_utf8_lossy(&buffer[..n]);
 
+    // match auth::authenticate_user(credentials.to_string()).await {
+    //     Ok((token, username)) => {
+    //         println!("[handle_client] [Debug] [token]: {:?}",&token);
+    //         let session_id = session_handler::create_or_get_session(token).await?;
+
+    //         println!("[handle_client]->[create_or_get_session] [Debug] [session_id]: {:?}",&session_id);
+    //         {
+    //             let mut sessions_lock = sessions.lock().await;
+    //             sessions_lock.insert(session_id, Session { token, addr, username });
+              
+    //         }
+
+    //         if let Err(e) = stream.write_all(&[1]).await {
+    //             eprintln!("[handle_client] [Error] Failed to write auth success: {}", e);
+    //             return Err(Box::new(e));
+    //         }
+
+    //         if let Err(e) = stream.write_all(&session_id.to_le_bytes()).await {
+    //             eprintln!("[handle_client] [Error] Failed to write session_id: {}", e);
+    //             return Err(Box::new(e)); 
+    //         }
+
+    //         if let Err(e) = stream.flush().await {
+    //             eprintln!("[handle_client] [Error] Failed to flush stream: {}", e);
+    //             return Err(Box::new(e)); 
+    //         }
+            
+    //         run_remote_desktop_server(session_id, stream, sessions).await;
+    //     },
+    //     Err(_) => {
+    //         if let Err(e) = stream.write_all(&[0]).await {
+    //             eprintln!("[handle_client] [Error] Failed to write auth failure: {}", e);
+    //         }
+    //         if let Err(e) = stream.flush().await {
+    //             eprintln!("[handle_client] [Error] Failed to flush auth failure: {}", e);
+    //         }
+    //     }
+    // }
+
     match auth::authenticate_user(credentials.to_string()).await {
         Ok((token, username)) => {
             println!("[handle_client] [Debug] [token]: {:?}",&token);
-            let session_id = create_or_get_session(token).await?;
 
-            println!("[handle_client]->[create_or_get_session] [Debug] [session_id]: {:?}",&session_id);
-            {
-                let mut sessions_lock = sessions.lock().await;
-                sessions_lock.insert(session_id, Session { token, addr, username });
-              
-            }
+            let mut session_manager = SessionManager::new()?;
 
-            if let Err(e) = stream.write_all(&[1]).await {
-                eprintln!("[handle_client] [Error] Failed to write auth success: {}", e);
-                return Err(Box::new(e));
-            }
+            match session_manager.create_session(token, &username) {
+                Ok(session_id) => {
+                    println!("Created session {} for user {}", session_id, username);
+                    // let session_id = session_handler::create_or_get_session(token).await?;
 
-            if let Err(e) = stream.write_all(&session_id.to_le_bytes()).await {
-                eprintln!("[handle_client] [Error] Failed to write session_id: {}", e);
-                return Err(Box::new(e)); 
-            }
+                    println!("[handle_client]->[create_or_get_session] [Debug] [session_id]: {:?}",&session_id);
+                    {
+                        let mut sessions_lock = sessions.lock().await;
+                        sessions_lock.insert(session_id, Session { token, addr, username });
+                    
+                    }
 
-            if let Err(e) = stream.flush().await {
-                eprintln!("[handle_client] [Error] Failed to flush stream: {}", e);
-                return Err(Box::new(e)); 
+                    if let Err(e) = stream.write_all(&[1]).await {
+                        eprintln!("[handle_client] [Error] Failed to write auth success: {}", e);
+                        return Err(Box::new(e));
+                    }
+
+                    if let Err(e) = stream.write_all(&session_id.to_le_bytes()).await {
+                        eprintln!("[handle_client] [Error] Failed to write session_id: {}", e);
+                        return Err(Box::new(e)); 
+                    }
+
+                    if let Err(e) = stream.flush().await {
+                        eprintln!("[handle_client] [Error] Failed to flush stream: {}", e);
+                        return Err(Box::new(e)); 
+                    }
+                    
+                    run_remote_desktop_server(session_id, stream, sessions).await;
+                },
+                Err(_) => {
+                    if let Err(e) = stream.write_all(&[0]).await {
+                        eprintln!("[handle_client] [Error] Failed to write session failure: {}", e);
+                    }
+                    if let Err(e) = stream.flush().await {
+                        eprintln!("[handle_client] [Error] Failed to flush session failure: {}", e);
+                    }
+                }
             }
-            
-            run_remote_desktop_server(session_id, stream, sessions).await;
         },
         Err(_) => {
             if let Err(e) = stream.write_all(&[0]).await {
@@ -93,49 +142,6 @@ async fn handle_client(addr: SocketAddr, mut stream: TcpStream, sessions: Arc<Mu
     Ok(())
 }
 
-async fn create_or_get_session(token: HANDLE) -> Result<u32, Box<dyn Error + Send + Sync>>{
-    unsafe {
-        let server_handle = WTSOpenServerA(PCSTR::null());
-        if server_handle.is_invalid() {
-            return Err("[create_or_get_session] [Error] : Failed to open server".into());
-        }
-
-        let mut bytes_returned: u32 = 0;
-        let mut buffer: PWSTR = PWSTR::null();
-        
-        let result = WTSQuerySessionInformationA(
-            server_handle,
-            WTS_CURRENT_SESSION,
-            WTSClientProtocolType,
-            &mut buffer as *mut PWSTR as *mut PSTR,
-            &mut bytes_returned,
-        );
-
-        if !result.as_bool() {
-            WTSCloseServer(server_handle);
-            return Err("[create_or_get_session] [Error] : Failed to query session information".into());
-        }
-
-        let mut rng = rand::thread_rng();
-        let session_id =  rng.gen::<u32>();
-
-        WTSCloseServer(server_handle);
-
-        Ok(session_id)
-    }
-}
-
-async fn cleanup_session(token: HANDLE, session_id: u32) {
-    unsafe {
-        let server_handle = WTSOpenServerA(PCSTR::null());
-        if !server_handle.is_invalid() {
-            WTSDisconnectSession(server_handle, session_id, false);
-            WTSLogoffSession(server_handle, session_id, false);
-            WTSCloseServer(server_handle);
-        }
-        CloseHandle(token);
-    }
-}
 
 pub async fn server() -> Result<(), Box<dyn Error + Send + Sync>> {
     let listener = TcpListener::bind("0.0.0.0:3000").await?;
