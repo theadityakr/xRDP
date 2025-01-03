@@ -26,7 +26,7 @@ async fn connect(connection_settings: String) -> Result<String, String> {
             if auth_success {
                 Ok("Connection Successful".to_string())
             } else {
-                Err("Authentication failed!".to_string())
+                Err("Authentication Failed!".to_string())
             }
         },
         Ok(Err(e)) => Err(format!("Connection Failed: {}", e)),
