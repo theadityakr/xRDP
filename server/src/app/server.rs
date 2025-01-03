@@ -139,6 +139,7 @@ async fn handle_client(addr: SocketAddr, mut stream: TcpStream, sessions: Arc<Mu
             }
         }
     }
+    
     Ok(())
 }
 
