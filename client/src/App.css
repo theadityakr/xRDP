@@ -21,8 +21,7 @@
   --appbar-background:var(--background);
 
 }
-html[data-theme="dark"],
-body[data-theme="dark"] {
+html[data-theme="dark"] {
   --font-family: "Poppins", sans-serif;
 
   --text: #f1f1f1;
@@ -31,7 +30,7 @@ body[data-theme="dark"] {
   --selected: var(--text);
 
   --background-grey: #505050;
-  --background: #121212;
+  --background: #0A0A0A;
 
   --empty: transparent;
   --empty-hover: var(--text);
