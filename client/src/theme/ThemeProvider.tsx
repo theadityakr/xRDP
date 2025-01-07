@@ -18,11 +18,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const systemTheme = (await appWindow.theme()) || "light";
         setTheme(systemTheme);
-        document.documentElement.setAttribute("data-theme", systemTheme);
+        document.documentElement.setAttribute("class", systemTheme);
       } catch (error) {
         console.error("Error fetching system theme:", error);
         setTheme("light");
-        document.documentElement.setAttribute("data-theme", "light");
+        document.documentElement.setAttribute("class", "light");
       }
     };
 
@@ -32,7 +32,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const unlisten = listen<string>("tauri://theme-changed", (event) => {
       const newTheme = event.payload || "light";
       setTheme(newTheme);
-      document.documentElement.setAttribute("data-theme", newTheme);
+      document.documentElement.setAttribute("class", newTheme);
     });
 
     // Cleanup the listener when the component is unmounted
@@ -44,7 +44,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    document.documentElement.setAttribute("class", newTheme);
   };
 
   return (

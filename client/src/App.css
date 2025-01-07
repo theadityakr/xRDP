@@ -21,7 +21,7 @@
   --appbar-background:var(--background);
 
 }
-html[data-theme="dark"] {
+html[class="dark"] {
   --font-family: "Poppins", sans-serif;
 
   --text: #f1f1f1;
