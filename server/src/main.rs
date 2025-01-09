@@ -8,6 +8,7 @@ mod app{
     pub mod input_handler;
     pub mod session_handler;
     pub mod wts;
+    pub mod helper;
 }
 
 use crate::app::server::server;

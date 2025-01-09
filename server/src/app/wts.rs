@@ -26,6 +26,137 @@ use windows::core::{PCSTR, PWSTR, PSTR, PCWSTR};
 use std::error::Error;
 use std::ptr::null_mut;
 
+use crate::app::helper::{self, wts_log};
+
+fn to_wide_string(s: &str) -> Vec<u16> {
+    s.encode_utf16().chain(std::iter::once(0)).collect()
+}
+
+fn check_required_privileges() -> Result<bool, Box<dyn Error + Send + Sync>> {
+    let required_privileges = [
+        "SeAssignPrimaryTokenPrivilege",
+        "SeIncreaseQuotaPrivilege",
+        "SeSecurityPrivilege",
+    ];
+
+    unsafe {
+        let process_handle = GetCurrentProcess();
+        
+        let mut token_handle = HANDLE::default();
+        if !OpenProcessToken(
+            process_handle,
+            TOKEN_QUERY,
+            &mut token_handle
+        ).as_bool() {
+            return Err("Failed to open process token".into());
+        }
+
+        let _token_guard = HandleGuard(token_handle);
+
+        for privilege_name in required_privileges.iter() {
+            let wide_name = to_wide_string(privilege_name);
+            let mut luid = windows::Win32::Foundation::LUID::default();
+            
+            if !LookupPrivilegeValueW(
+                PCWSTR::null(),
+                PCWSTR::from_raw(wide_name.as_ptr()),
+                &mut luid
+            ).as_bool() {
+                return Err(format!("Failed to look up privilege value for {}", privilege_name).into());
+            }
+
+            let mut privilege_set = PRIVILEGE_SET {
+                PrivilegeCount: 1,
+                Control: 1, // PRIVILEGE_SET_ALL_NECESSARY
+                Privilege: [LUID_AND_ATTRIBUTES {
+                    Luid: luid,
+                    Attributes: windows::Win32::Security::SE_PRIVILEGE_ENABLED,
+                }],
+            };
+
+            let mut privilege_result: i32 = 0;
+            
+            if !PrivilegeCheck(
+                token_handle,
+                &mut privilege_set,
+                &mut privilege_result
+            ).as_bool() {
+                return Err(format!("Failed to check privilege status for {}", privilege_name).into());
+            }
+
+            if privilege_result == 0 {
+                println!("[check_required_privileges] [Warning] Missing privilege: {}", privilege_name);
+                return Ok(false);
+            }
+        }
+
+        println!("[check_required_privileges] [Debug] All required privileges are present");
+        Ok(true)
+    }
+}
+
+fn enable_required_privileges(mut token_handle: HANDLE) -> Result<(HANDLE), Box<dyn Error + Send + Sync>> {
+    let required_privileges = [
+        "SeAssignPrimaryTokenPrivilege",
+        "SeIncreaseQuotaPrivilege",
+        "SeSecurityPrivilege",
+    ];
+
+    unsafe {
+        let process_handle = GetCurrentProcess();
+        // let mut token_handle = HANDLE::default();
+
+        if !OpenProcessToken(
+            process_handle,
+            TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+            &mut token_handle
+        ).as_bool() {
+            return Err("[enable_required_privileges] [Error] Failed to open process token".into());
+        }
+        
+        let _token_guard = HandleGuard(token_handle);
+
+        for privilege_name in required_privileges.iter() {
+            let wide_name = to_wide_string(privilege_name);
+            let mut luid = windows::Win32::Foundation::LUID::default();
+            
+            if !LookupPrivilegeValueW(
+                PCWSTR::null(),
+                PCWSTR::from_raw(wide_name.as_ptr()),
+                &mut luid
+            ).as_bool() {
+                return Err(format!("[enable_required_privileges] [Error] Failed to look up privilege value for {}", privilege_name).into());
+            }
+
+            let mut new_privileges = TOKEN_PRIVILEGES {
+                PrivilegeCount: 1,
+                Privileges: [LUID_AND_ATTRIBUTES {
+                    Luid: luid,
+                    Attributes: SE_PRIVILEGE_ENABLED,
+                }],
+            };
+
+            if !AdjustTokenPrivileges(
+                token_handle,
+                false,
+                Some(&mut new_privileges),
+                0,
+                None,
+                None,
+            ).as_bool() {
+                return Err(format!("[enable_required_privileges] [Error] Failed to adjust token privileges for {}", privilege_name).into());
+            }
+            
+            helper::wts_log::error("enable_required_privileges", format!("Failed to enable privilege [{}]",privilege_name).as_str());
+        }
+        helper::wts_log::debug::<String>("enable_required_privileges", "Successfully enabled all required privileges", None);
+
+        Ok((token_handle))
+    }
+}
+
+struct HandleGuard(HANDLE);
+
 pub struct SessionManager {
     server_handle: HANDLE,
     session_id: Option<u32>,
@@ -49,10 +180,11 @@ impl SessionManager {
     }
 
     pub fn create_session(&mut self, token: HANDLE, username: &str) -> Result<u32, Box<dyn Error + Send + Sync>> {
-        println!("[create_session] [Debug] Starting session creation for user: {}", username);
-        println!("[create_session] [Debug] Token handle: {:?}", token);
+        // println!("[create_session] [Debug] Starting session creation for user: {}", username);
+        // println!("[create_session] [Debug] Token handle: {:?}", token);
 
         unsafe {
+            // let mut token_handle = HANDLE::default();
             let mut count: u32 = 0;
             let mut sessions: *mut WTS_SESSION_INFOA = null_mut();
             
@@ -64,15 +196,12 @@ impl SessionManager {
                 &mut sessions,
                 &mut count
             ).as_bool() {
-                let error = Win32Error::get_last_error();
-                eprintln!("[create_session] [Error] Failed to enumerate sessions: {}", error);
-                return Err(format!("Failed to enumerate sessions: {}", error).into());
+                let last_error:Win32Error = helper::wts_log::error("create_session", "Failed to enumerate sessions");
+                return Err(format!("Failed to enumerate sessions: {}", last_error).into());
             }
-            println!("[create_session] [Debug] Found {} sessions", count);
 
             let sessions_slice = std::slice::from_raw_parts(sessions, count as usize);
             
-            // Look for existing disconnected session
             for session in sessions_slice {
                 println!("[create_session] [Debug] Checking session ID: {}", session.SessionId);
                 let mut buffer: PWSTR = PWSTR::null();
@@ -84,8 +213,7 @@ impl SessionManager {
                     WTS_INFO_CLASS(5), // WTSUserName
                     &mut buffer as *mut PWSTR as *mut PSTR,
                     &mut bytes_returned
-                ).as_bool() {
-                    // let session_username = buffer.to_string().unwrap_or_default();
+                ).as_bool() {                  
                     let session_username = if !buffer.is_null() {
                         let c_str = std::ffi::CStr::from_ptr(buffer.as_ptr() as *const i8);
                         match c_str.to_str() {
@@ -101,6 +229,7 @@ impl SessionManager {
 
                     println!("[create_session] [Debug] Session username: {}", session_username);
                     
+                    // IMPORTANT username is matching
                     if session_username == username && session.State != WTSActive {
                         println!("[create_session] [Debug] Found existing disconnected session: {}", session.SessionId);
                         self.session_id = Some(session.SessionId);
@@ -113,20 +242,16 @@ impl SessionManager {
 
             println!("[create_session] [Debug] No existing session found, creating new session");
 
-            match enable_required_privileges() {
-                Ok(()) => {
-                    println!("Successfully enabled required privileges");
-                    // Proceed with session creation
-                },
-                Err(e) => {
-                    eprintln!("Failed to enable privileges: {}", e);
-                    // Handle error appropriately
-                }
-            }
-            
-
             if !check_required_privileges()? {
-                return Err("Missing required privileges for creating user session".into());
+                match enable_required_privileges(token) {
+                    Ok((token)) => {
+                        
+                    },
+                    Err(e) => {
+                        helper::server_log::error::<String>("create_session", "Missing required privileges for creating user session",None);
+                        helper::server_log::error("create_session", "Failed to enable privileges",Some(e));
+                    }
+                }
             }
 
             let mut startup_info: STARTUPINFOW = STARTUPINFOW::default();
@@ -136,8 +261,7 @@ impl SessionManager {
             startup_info.wShowWindow = 1;
             
             let mut process_info: PROCESS_INFORMATION = PROCESS_INFORMATION::default();
-            
-            println!("[create_session] [Debug] Preparing to launch explorer.exe");
+        
             let cmd = to_wide_string("C:\\Windows\\explorer.exe");
             let cmd_pwstr = PWSTR::from_raw(cmd.as_ptr() as *mut u16);
             
@@ -146,8 +270,7 @@ impl SessionManager {
                 lpSecurityDescriptor: null_mut(),
                 bInheritHandle: BOOL::from(false),
             };
-
-            println!("[create_session] [Debug] Attempting to create process as user");
+            
             if unsafe {
              CreateProcessAsUserW(
                 token,
@@ -188,24 +311,18 @@ impl SessionManager {
                     self.session_id = Some(session_id);
                     return Ok(session_id);
                 } else {
-                    let last_error = Win32Error::get_last_error();
-                    eprintln!("[create_session] [Error] Failed to query session ID for process: {}", {last_error});
+                    helper::wts_log::error("create_session", "Failed to query session ID for process");
                 }
             } else {
-                let last_error = Win32Error::get_last_error();
-                eprintln!(
-                    "[create_session] [Error] Failed to create process as user: {}",last_error
-                );
-    
+                helper::wts_log::error("create_session", "Failed to create process as user");
             }
-            
-            eprintln!("[create_session] [Error] Failed to create new session");
-            Err("Failed to create new session".into())
+            helper::server_log::error::<String>("create_session", "Failed to create new session", None);
+            Err("[create_session] [Error] Failed to create new session".into())
         }
     }
 
     pub fn get_current_session_id(&self) -> Option<u32> {
-        println!("[get_current_session_id] [Debug] Current session ID: {:?}", self.session_id);
+        wts_log::debug("get_current_session_id", "Current session ID", Some(self.session_id));
         self.session_id
     }
 }
@@ -218,145 +335,3 @@ impl Drop for SessionManager {
         }
     }
 }
-
-fn to_wide_string(s: &str) -> Vec<u16> {
-    println!("[to_wide_string] [Debug] Converting string to wide string: {}", s);
-    s.encode_utf16().chain(std::iter::once(0)).collect()
-}
-
-fn check_required_privileges() -> Result<bool, Box<dyn Error + Send + Sync>> {
-    let required_privileges = [
-        "SeAssignPrimaryTokenPrivilege",
-        "SeIncreaseQuotaPrivilege",
-        "SeSecurityPrivilege",
-    ];
-
-    unsafe {
-        // Get current process handle
-        let process_handle = GetCurrentProcess();
-        
-        // Get process token
-        let mut token_handle = HANDLE::default();
-        if !OpenProcessToken(
-            process_handle,
-            TOKEN_QUERY,
-            &mut token_handle
-        ).as_bool() {
-            return Err("Failed to open process token".into());
-        }
-        
-        // RAII guard for token handle
-        let _token_guard = HandleGuard(token_handle);
-
-        // Check each required privilege
-        for privilege_name in required_privileges.iter() {
-            let wide_name = to_wide_string(privilege_name);
-            let mut luid = windows::Win32::Foundation::LUID::default();
-            
-            // Look up the LUID for the privilege
-            if !LookupPrivilegeValueW(
-                PCWSTR::null(),
-                PCWSTR::from_raw(wide_name.as_ptr()),
-                &mut luid
-            ).as_bool() {
-                return Err(format!("Failed to look up privilege value for {}", privilege_name).into());
-            }
-
-            // Set up the privilege set for checking
-            let mut privilege_set = PRIVILEGE_SET {
-                PrivilegeCount: 1,
-                Control: 1, // PRIVILEGE_SET_ALL_NECESSARY
-                Privilege: [LUID_AND_ATTRIBUTES {
-                    Luid: luid,
-                    Attributes: windows::Win32::Security::SE_PRIVILEGE_ENABLED,
-                }],
-            };
-
-            let mut privilege_result: i32 = 0;
-            
-            // Check if the privilege is enabled
-            if !PrivilegeCheck(
-                token_handle,
-                &mut privilege_set,
-                &mut privilege_result
-            ).as_bool() {
-                return Err(format!("Failed to check privilege status for {}", privilege_name).into());
-            }
-
-            if privilege_result == 0 {
-                println!("[check_required_privileges] [Warning] Missing privilege: {}", privilege_name);
-                return Ok(false);
-            }
-        }
-
-        println!("[check_required_privileges] [Debug] All required privileges are present");
-        Ok(true)
-    }
-}
-
-fn enable_required_privileges() -> Result<(), Box<dyn Error + Send + Sync>> {
-    let required_privileges = [
-        "SeAssignPrimaryTokenPrivilege",
-        "SeIncreaseQuotaPrivilege",
-        "SeSecurityPrivilege",
-    ];
-
-    unsafe {
-        // Get current process handle
-        let process_handle = GetCurrentProcess();
-        
-        // Get process token with adjust privileges rights
-        let mut token_handle = HANDLE::default();
-        if !OpenProcessToken(
-            process_handle,
-            TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-            &mut token_handle
-        ).as_bool() {
-            return Err("Failed to open process token".into());
-        }
-        
-        let _token_guard = HandleGuard(token_handle);
-
-        // Enable each required privilege
-        for privilege_name in required_privileges.iter() {
-            let wide_name = to_wide_string(privilege_name);
-            let mut luid = windows::Win32::Foundation::LUID::default();
-            
-            println!("[enable_required_privileges] [Debug] Enabling privilege: {}", privilege_name);
-            
-            if !LookupPrivilegeValueW(
-                PCWSTR::null(),
-                PCWSTR::from_raw(wide_name.as_ptr()),
-                &mut luid
-            ).as_bool() {
-                return Err(format!("Failed to look up privilege value for {}", privilege_name).into());
-            }
-
-            let mut new_privileges = TOKEN_PRIVILEGES {
-                PrivilegeCount: 1,
-                Privileges: [LUID_AND_ATTRIBUTES {
-                    Luid: luid,
-                    Attributes: SE_PRIVILEGE_ENABLED,
-                }],
-            };
-
-            // Adjust token privileges
-            if !AdjustTokenPrivileges(
-                token_handle,
-                false,
-                Some(&mut new_privileges),
-                0,
-                None,
-                None,
-            ).as_bool() {
-                return Err(format!("Failed to adjust token privileges for {}", privilege_name).into());
-            }
-        }
-
-        println!("[enable_required_privileges] [Debug] Successfully enabled all required privileges");
-        Ok(())
-    }
-}
-
-// RAII wrapper for Windows handles
-struct HandleGuard(HANDLE);
