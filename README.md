@@ -25,6 +25,12 @@ This project is a fast and memory-safe Remote Desktop Protocol (RDP) client and 
 - **minifb**: Minimal framebuffer window to render the received remote desktop screen.
 - **Tokio**: Asynchronous runtime for managing TCP connections and efficient data streaming.
 
+# Demo
+
+
+https://github.com/user-attachments/assets/c79b28ac-71a9-43b0-86db-47ae424740f5
+
+
 ## Installation
 
 1. **Clone the repository**:
