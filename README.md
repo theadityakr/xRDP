@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a fast and memory-safe Remote Desktop Protocol (RDP) client and server implementation built using Rust. It leverages the Windows API for authentication and screen capture, offering an efficient and secure way to remotely access desktops with minimal latency and high performance. The project demonstrates the capabilities of Rust for building robust systems applications that prioritize speed, safety, and efficiency.
+This project is a fast and memory-safe Remote Desktop Protocol (RDP), server and client implementation built using Rust. It leverages the Windows API for authentication and rust crates screen capture on the server side and tauri react for client frontend, offering an efficient and secure way to remotely access desktops with minimal latency and high performance. The project demonstrates the capabilities of Rust for building robust systems applications that prioritize speed, safety, and efficiency.
 
 ## Features
 
